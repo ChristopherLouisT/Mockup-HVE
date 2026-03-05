@@ -166,6 +166,7 @@ const MonitoringSRT = () => {
                 <th className="px-4 py-4">START TIME (DT)</th>
                 <th className="px-4 py-4">SYSTEM</th>
                 <th className="px-4 py-4 text-red-600">FAILURE TYPE</th>
+                <th className="px-4 py-4 text-slate-600">ACTION TYPE</th>
                 <th className="px-4 py-4 text-blue-800">MECHANIC & HELPER</th>
                 <th onClick={() => requestSort('current')} className="px-4 py-4 text-center bg-red-50/30 cursor-pointer">CURRENT DT (H) <SortIcon field="current" /></th>
                 <th className="px-4 py-4 text-center">STATUS SRT</th>
@@ -190,6 +191,13 @@ const MonitoringSRT = () => {
                     <div className="flex flex-col gap-1">
                       {log.failureType.split(' | ').map((fail, i) => (
                         <div key={i} className="leading-tight border-b border-red-50 last:border-0 pb-1 last:pb-0">{fail.trim()}</div>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 font-medium text-slate-500 italic text-[10px]">
+                    <div className="flex flex-col gap-1">
+                      {log.actionType.split(' | ').map((action, i) => (
+                        <div key={i} className="leading-tight border-b border-red-50 last:border-0 pb-1 last:pb-0">{action.trim()}</div>
                       ))}
                     </div>
                   </td>
