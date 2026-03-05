@@ -20,9 +20,9 @@ const MonitoringSRT = () => {
   ];
 
   const initialHistoryLogs = [
-    { id: 'SPK-003', type: 'CRANE', name: 'HVE SBY 14 / RS KONE', loc: 'SURABAYA', system: 'ELECTRICAL', failureType: 'SHORT', actionType: 'REPAIR', staff: 'Agus P. (M), Dani (H)', start: '02-03-2026 08:00', end: '02-03-2026 11:30', labor: 0.5, part: 0.5, repair: 2.0, other: 0.5, final: 3.5, target: 4.0, status: 'ACHIEVED SRT' },
-    { id: 'SPK-004', type: 'REACH STACKER', name: 'HVE AMB 02 / BENGKEL', loc: 'AMBON', system: 'HYDRAULIC', failureType: 'BURST', actionType: 'REPLACE', staff: 'Heru (M), Jojo (H)', start: '01-03-2026 10:00', end: '01-03-2026 16:00', labor: 1.0, part: 2.0, repair: 3.0, other: 0.0, final: 6.0, target: 4.0, status: 'EXCEEDED SRT' },
-    { id: 'SPK-006', type: 'FORKLIFT', name: 'HVE JKT 09 / FL TCM', loc: 'JAKARTA', system: 'BRAKE', failureType: 'WORN PAD', actionType: 'REPLACE', staff: 'Doni (M), Eka (H)', start: '01-03-2026 13:00', end: '01-03-2026 15:12', labor: 0.2, part: 1.0, repair: 1.0, other: 0.0, final: 2.2, target: 3.0, status: 'ACHIEVED SRT' },
+    { id: 'SPK-003', type: 'CRANE', name: 'HVE SBY 14 / RS KONE', loc: 'SURABAYA', system: 'DRIVESHAFT', failureType: 'BAUT JOINT DRUM SWING KENDOR', actionType: 'PERBAIKI / GANTI BAUT JOINT & PLAT', staff: 'Agus P. (M), Dani (H)', start: '02-03-2026 08:00', end: '02-03-2026 11:30', labor: 0.5, part: 0.5, repair: 2.0, other: 0.5, final: 3.5, target: 4.0, status: 'ACHIEVED SRT' },
+    { id: 'SPK-004', type: 'REACH STACKER', name: 'HVE AMB 02 / BENGKEL', loc: 'AMBON', system: 'FUEL SYSTEM', failureType: 'RPM DROP', actionType: 'CLEAN JALUR SOLAR', staff: 'Heru (M), Jojo (H)', start: '01-03-2026 10:00', end: '01-03-2026 16:00', labor: 1.0, part: 2.0, repair: 3.0, other: 0.0, final: 6.0, target: 4.0, status: 'EXCEEDED SRT' },
+    { id: 'SPK-006', type: 'FORKLIFT', name: 'HVE JKT 09 / FL TCM', loc: 'JAKARTA', system: 'TRANSMISSION', failureType: 'OVERHAUL', actionType: 'OVERHAUL', staff: 'Doni (M), Eka (H)', start: '01-03-2026 13:00', end: '01-03-2026 15:12', labor: 0.2, part: 1.0, repair: 1.0, other: 0.0, final: 2.2, target: 3.0, status: 'ACHIEVED SRT' },
   ];
 
   const parseDateString = (dateStr: string) => {
@@ -163,11 +163,11 @@ const MonitoringSRT = () => {
                 <th className="px-4 py-4">EQUIP TYPE</th>
                 <th onClick={() => requestSort('name')} className="px-4 py-4 cursor-pointer hover:bg-slate-100">EQUIP NAME <SortIcon field="name" /></th>
                 <th className="px-4 py-4 text-center">LOCATION</th>
-                <th className="px-4 py-4">START TIME (DT)</th>
                 <th className="px-4 py-4">SYSTEM</th>
                 <th className="px-4 py-4 text-red-600">FAILURE TYPE</th>
                 <th className="px-4 py-4 text-slate-600">ACTION TYPE</th>
                 <th className="px-4 py-4 text-blue-800">MECHANIC & HELPER</th>
+                <th className="px-4 py-4">START TIME (DT)</th>
                 <th onClick={() => requestSort('current')} className="px-4 py-4 text-center bg-red-50/30 cursor-pointer">CURRENT DT (H) <SortIcon field="current" /></th>
                 <th className="px-4 py-4 text-center">STATUS SRT</th>
               </tr>
@@ -179,7 +179,6 @@ const MonitoringSRT = () => {
                   <td className="px-4 py-4 text-slate-600">{log.type}</td>
                   <td className="px-4 py-4 font-black text-red-600 tracking-tighter">{log.name}</td>
                   <td className="px-4 py-4 text-center text-slate-400 font-bold">{log.loc}</td>
-                  <td className="px-4 py-4 font-mono text-slate-700 bg-slate-50/50">{log.start}</td>
                   <td className="px-4 py-4 font-black text-slate-800 text-[10px] leading-tight">
                     <div className="flex flex-col gap-1">
                       {log.system.split(' | ').map((system, i) => (
@@ -202,6 +201,7 @@ const MonitoringSRT = () => {
                     </div>
                   </td>
                   <td className="px-4 py-4 font-bold text-blue-800">{log.staff}</td>
+                  <td className="px-4 py-4 font-mono text-slate-700 bg-slate-50/50">{log.start}</td>
                   <td className="px-4 py-4 text-center bg-red-50/20 font-black text-red-600 text-base leading-none">
                     {log.current.toFixed(1)} <br/><span className="text-[8px] text-slate-400 font-bold uppercase">Target: {log.target}h</span>
                   </td>
@@ -221,8 +221,12 @@ const MonitoringSRT = () => {
             <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 uppercase tracking-tighter text-left">
               <tr className="divide-x divide-slate-100">
                 <th rowSpan={2} className="px-2 py-4 text-center">NO. SPK</th>
+                <th rowSpan={2} className="px-2 py-4">EQUIP TYPE</th>
                 <th rowSpan={2} className="px-2 py-4">EQUIP NAME</th>
                 <th rowSpan={2} className="px-2 py-4 text-center">LOCATION</th>
+                <th rowSpan={2} className="px-2 py-4">SYSTEM</th>
+                <th rowSpan={2} className="px-4 py-4 text-red-600">FAILURE TYPE</th>
+                <th rowSpan={2} className="px-4 py-4 text-slate-600">ACTION TYPE</th>
                 <th rowSpan={2} className="px-2 py-4 text-blue-800">MECHANIC & HELPER</th>
                 <th colSpan={2} className="px-2 py-2 text-center bg-blue-50/30 border-b border-blue-100 text-blue-700 tracking-widest text-[9px]">DATETIME LOG</th>
                 <th colSpan={5} className="px-2 py-2 text-center bg-yellow-50/50 border-b border-slate-200 text-yellow-700 tracking-widest text-[9px]">DOWNTIME (HOURS)</th>
@@ -243,8 +247,12 @@ const MonitoringSRT = () => {
               {filteredHistory.map((log) => (
                 <tr key={log.id} className="hover:bg-slate-50 transition-colors divide-x divide-slate-100 uppercase">
                   <td className="px-2 py-4 text-blue-600 font-black underline text-center">{log.id}</td>
+                  <td className="px-2 py-4 font-black text-slate-800 tracking-tighter">{log.type}</td>
                   <td className="px-2 py-4 font-black text-slate-800 tracking-tighter">{log.name}</td>
                   <td className="px-2 py-4 text-center text-slate-400 font-bold">{log.loc}</td>
+                  <td className="px-2 py-4 font-black text-slate-800 tracking-tighter">{log.system}</td>
+                  <td className="px-4 py-4 text-red-600 font-bold">{log.failureType}</td>
+                  <td className="px-4 py-4 text-slate-600 font-bold">{log.actionType}</td>
                   <td className="px-2 py-4 text-blue-700 font-black text-[9px] leading-tight">{log.staff}</td>
                   <td className="px-2 py-4 font-mono text-[9px] text-slate-600 bg-blue-50/10">{log.start}</td>
                   <td className="px-2 py-4 font-mono text-[9px] text-slate-600 bg-blue-50/10">{log.end}</td>
