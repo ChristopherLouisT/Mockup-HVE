@@ -9,13 +9,15 @@ import {
 
 const MonitoringPerforma = () => {
   const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
+  const [hoveredRoot, setHoveredRoot] = useState<number | null>(null);
+  const totalNDT = 142;
 
   // 1. KPI Stats Data
   const stats = [
     { label: "Availability Rate", value: "92.4 %", sub: "Average Availability", color: "text-green-600", icon: Activity },
     { label: "Mean Time to Repair (MTTR)", value: "4.1 Hrs", sub: "Average Time to Repair", color: "text-red-600", icon: Wrench },
     { label: "Mean Time Between Failures (MTBF)", value: "315 Hrs", sub: "Average Mean Time Between Failures", color: "text-blue-600", icon: Clock },
-    { label: "Utilitas Alat (HM)", value: "1,240 HM", sub: "Total Jam Kerja Efektif", color: "text-orange-600", icon: Gauge },
+    { label: "Number Downtime (NDT)", value: `${totalNDT} NDT`, sub: "Total Number Downtime", color: "text-orange-600", icon: Gauge },
   ];
 
   // 2. Trend Data (Dummy Months)
@@ -148,29 +150,49 @@ const MonitoringPerforma = () => {
             <div 
               className="relative w-44 h-44 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-105 duration-500"
               style={{ background: donutGradient }}>
-               <div className="w-28 h-28 bg-white rounded-full flex flex-col items-center justify-center shadow-inner">
-                  <div className="text-2xl font-black text-slate-800 leading-none">142</div>
-                  <div className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Total NDT</div>
-               </div>
+               <div className="w-28 h-28 bg-white rounded-full flex flex-col items-center justify-center shadow-inner"></div>
             </div>
 
             {/* Legends */}
             <div className="space-y-4 min-w-[160px]">
               {rootCauses.map((rc, i) => (
-                <div key={i} className="group cursor-pointer">
+                <div 
+                  key={i} 
+                  className="group cursor-pointer relative"
+                  onMouseEnter={() => setHoveredRoot(i)}
+                  onMouseLeave={() => setHoveredRoot(null)}>
+                  {/* Floating Tooltip */}
+                  {hoveredRoot === i && (
+                    <div className="absolute -top-12 left-0 bg-slate-800 text-white px-2 py-1 rounded text-[9px] shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200 border border-slate-600 whitespace-nowrap">
+                      <span className="font-black uppercase">{rc.label}</span>: 
+                      <span className={`text-white ml-1`}>
+                        {Math.round((rc.p / 100) * totalNDT)} Cases
+                      </span>
+                      <div className="absolute -bottom-1 left-3 w-2 h-2 bg-slate-800 rotate-45 border-r border-b border-slate-600"></div>
+                    </div>
+                  )}
+
                   <div className="flex items-center justify-between mb-1">
                     <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${rc.color} ring-2 ring-white shadow-sm`}></div>
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter">{rc.label}</span>
+                      <div className={`w-3 h-3 rounded-full ${rc.color} ring-2 ring-white shadow-sm group-hover:scale-110 transition-transform`}></div>
+                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter group-hover:text-slate-800 transition-colors">
+                        {rc.label}
+                      </span>
                     </div>
                     <span className="text-[10px] font-black text-slate-800">{rc.p}%</span>
                   </div>
+                  
                   <div className="w-full bg-slate-50 h-1 rounded-full overflow-hidden">
-                     <div className={`${rc.color} h-full transition-all duration-1000`} style={{ width: `${rc.p}%` }}></div>
+                    <div 
+                      className={`${rc.color} h-full transition-all duration-1000 group-hover:brightness-90`} 
+                      style={{ width: `${rc.p}%` }}
+                    ></div>
                   </div>
                 </div>
               ))}
             </div>
+
+
           </div>
         </div>
 

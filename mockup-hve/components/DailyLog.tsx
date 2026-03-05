@@ -1,14 +1,27 @@
 "use client";
 import { useState, useMemo } from 'react';
 import { 
-  Plus, Save, X, Settings, FileText, Clock, Wrench, Users,
-  Search, RotateCcw, UserPlus, Package, Minus, ChevronLeft, AlertCircle 
-} from 'lucide-react';
+  Plus, Save, X, Settings, 
+  FileText, Clock, Wrench, Users,
+  Search, RotateCcw, UserPlus, Package, 
+  Minus, ChevronLeft, AlertCircle } from 'lucide-react';
 
 const DailyLogActivity = () => {
   const [activities, setActivities] = useState<any[]>([]);
   const [mechanics, setMechanics] = useState<string[]>([]);
   const [helpers, setHelpers] = useState<string[]>([]);
+
+  // Equipment & Code State ---
+  const [equipName, setEquipName] = useState("");
+  const [noSPK, setNoSPK] = useState("");
+  const [noBPB, setNoBPB] = useState("");
+  const [noLOKB, setNoLOKB] = useState("");
+  const [noLOKK, setNoLOKK] = useState("");
+
+  // Additional Timing State ---
+  const [waitLabor, setWaitLabor] = useState("");
+  const [waitPart, setWaitPart] = useState("");
+  const [timeRepair, setTimeRepair] = useState("");
 
   // Form state
   const [mechInput, setMechInput] = useState("");
@@ -18,33 +31,36 @@ const DailyLogActivity = () => {
   const [actType, setActType] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
 
+  // Auto-fill Mapping ---
+  const equipRegistry: any = {
+    "Reach Stacker": { spk: "SPK-RS-2026-001", bpb: "BPB-RS-101", lokb: "LOKB-A1", lokk: "LOKK-X9" },
+    "Trailer": { spk: "SPK-TR-2026-042", bpb: "BPB-TR-205", lokb: "LOKB-B2", lokk: "LOKK-Y8" },
+    "Forklift": { spk: "SPK-FL-2026-015", bpb: "BPB-FL-309", lokb: "LOKB-C3", lokk: "LOKK-Z7" },
+    "Kereta Tempel": { spk: "SPK-KT-2026-088", bpb: "BPB-KT-404", lokb: "LOKB-D4", lokk: "LOKK-W6" },
+    "Side Loader": { spk: "SPK-SL-2026-112", bpb: "BPB-SL-505", lokb: "LOKB-E5", lokk: "LOKK-V5" },
+    "Top Loader": { spk: "SPK-TL-2026-003", bpb: "BPB-TL-606", lokb: "LOKB-F6", lokk: "LOKK-U4" },
+    "Tronton": { spk: "SPK-TN-2026-221", bpb: "BPB-TN-707", lokb: "LOKB-G7", lokk: "LOKK-T3" }
+  };
+
+  const handleEquipChange = (name: string) => {
+    setEquipName(name);
+    if (equipRegistry[name]) {
+      setNoSPK(equipRegistry[name].spk);
+      setNoBPB(equipRegistry[name].bpb);
+      setNoLOKB(equipRegistry[name].lokb);
+      setNoLOKK(equipRegistry[name].lokk);
+    } else {
+      setNoSPK(""); setNoBPB(""); setNoLOKB(""); setNoLOKK("");
+    }
+  };
+
   // --- MASTER DATA FROM EXCEL ---
   const masterStandardData = [
-    { 
-      component: "[0-0] SCHEDULED MAINT. (PM)", 
-      failures: ["Unit Kotor", "General Check", "Greasing Berkala", "Preventive Maintenance"], 
-      actions: ["Cuci Unit", "General Check", "Greasing Komponen", "Preventive Maintenance"] 
-    },
-    { 
-      component: "[01-0] AC (CAB & BODY)", 
-      failures: ["Ac Kurang Dingin"], 
-      actions: ["Cleaning Ac"] 
-    },
-    { 
-      component: "[01-1] CAB STRUCTURE & GLASS (CAB & BODY)", 
-      failures: ["Wiper Tersendat", "Kaca Kabin Pecah", "Pintu Tidak Bisa Lock"], 
-      actions: ["Cek Motor Wiper", "Ganti Kaca Akrilik", "Perbaikan Engsel / Mekanisme Lock"] 
-    },
-    { 
-      component: "[08-1] STRUCTURE & EXT. (TRAILER)", 
-      failures: ["Rumah Lock Rusak", "Tangga Patah", "Spakbor Patah"], 
-      actions: ["Las / Ganti Rumah Lock", "Repair Tangga", "Las Spakbor"] 
-    },
-    { 
-      component: "[09-0] HOIST WINCH (CRANE)", 
-      failures: ["Pin Rem Cargo Lepas", "Kawat Boom & Cargo Aus", "Ganti Sling Cargo"], 
-      actions: ["Perbaiki Pin Rem Drum Cargo", "Greasing Kawat", "Ganti Sling Cargo"] 
-    }
+    { component: "[0-0] SCHEDULED MAINT. (PM)", failures: ["Unit Kotor", "General Check", "Greasing Berkala", "Preventive Maintenance"], actions: ["Cuci Unit", "General Check", "Greasing Komponen", "Preventive Maintenance"] },
+    { component: "[01-0] AC (CAB & BODY)", failures: ["Ac Kurang Dingin"], actions: ["Cleaning Ac"] },
+    { component: "[01-1] CAB STRUCTURE & GLASS (CAB & BODY)", failures: ["Wiper Tersendat", "Kaca Kabin Pecah", "Pintu Tidak Bisa Lock"], actions: ["Cek Motor Wiper", "Ganti Kaca Akrilik", "Perbaikan Engsel / Mekanisme Lock"] },
+    { component: "[08-1] STRUCTURE & EXT. (TRAILER)", failures: ["Rumah Lock Rusak", "Tangga Patah", "Spakbor Patah"], actions: ["Las / Ganti Rumah Lock", "Repair Tangga", "Las Spakbor"] },
+    { component: "[09-0] HOIST WINCH (CRANE)", failures: ["Pin Rem Cargo Lepas", "Kawat Boom & Cargo Aus", "Ganti Sling Cargo"], actions: ["Perbaiki Pin Rem Drum Cargo", "Greasing Kawat", "Ganti Sling Cargo"] }
   ];
 
   // Dynamic Filtering Logic
@@ -135,16 +151,9 @@ const DailyLogActivity = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-      {/* DYNAMIC DATALISTS */}
-      <datalist id="unified-master">
-        {masterStandardData.map((d, i) => <option key={i} value={d.component} />)}
-      </datalist>
-      <datalist id="failure-types">
-        {availableFailures.map((f, i) => <option key={i} value={f} />)}
-      </datalist>
-      <datalist id="action-types">
-        {availableActions.map((a, i) => <option key={i} value={a} />)}
-      </datalist>
+      <datalist id="unified-master">{masterStandardData.map((d, i) => <option key={i} value={d.component} />)}</datalist>
+      <datalist id="failure-types">{availableFailures.map((f, i) => <option key={i} value={f} />)}</datalist>
+      <datalist id="action-types">{availableActions.map((a, i) => <option key={i} value={a} />)}</datalist>
 
       <main className="max-w-7xl mx-auto p-8">
         <div className="flex items-center justify-between mb-6">
@@ -157,7 +166,12 @@ const DailyLogActivity = () => {
             <div className="space-y-4">
               <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Settings size={16} /> Equipment Details</h3>
               <div className="grid grid-cols-3 gap-4 items-center"><label className="text-sm font-semibold text-slate-600">Lokasi</label><select className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"><option>SPIL Kalianak</option><option>Depo 4</option><option>Depo Tambak Langon</option><option>Depo Japfa</option><option>Depo Yon</option><option>Depo Tanjung Batu</option></select></div>
-              <div className="grid grid-cols-3 gap-4 items-center"><label className="text-sm font-semibold text-slate-600">Equip Name</label><select className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"><option>Reach Stacker</option><option>Trailer</option><option>Forklift</option><option>Kereta Tempel</option><option>Side Loader</option><option>Top Loader</option><option>Tronton</option></select></div>
+              <div className="grid grid-cols-3 gap-4 items-center"><label className="text-sm font-semibold text-slate-600">Equip Name</label><select value={equipName} onChange={(e) => handleEquipChange(e.target.value)} className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"><option value="">Pilih Alat...</option><option>Reach Stacker</option><option>Trailer</option><option>Forklift</option><option>Kereta Tempel</option><option>Side Loader</option><option>Top Loader</option><option>Tronton</option></select></div>
+              {/* AUTO FILL INPUTS */}
+              <div className="grid grid-cols-3 gap-4 items-center"><label className="text-xs font-bold text-slate-400 uppercase tracking-tight">No. SPK</label><input disabled value={noSPK} className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-700" /></div>
+              <div className="grid grid-cols-3 gap-4 items-center"><label className="text-xs font-bold text-slate-400 uppercase tracking-tight">No. BPB</label><input disabled value={noBPB} className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-700" /></div>
+              <div className="grid grid-cols-3 gap-4 items-center"><label className="text-xs font-bold text-slate-400 uppercase tracking-tight">No. LOKB</label><input disabled value={noLOKB} className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-700" /></div>
+              <div className="grid grid-cols-3 gap-4 items-center"><label className="text-xs font-bold text-slate-400 uppercase tracking-tight">No. LOKK</label><input disabled value={noLOKK} className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-700" /></div>
               <div className="grid grid-cols-3 gap-4 items-center"><label className="text-sm font-semibold text-slate-600">Activity Type</label><select className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"><option>01. Maintenance</option><option>02. Breakdown</option><option>05. PM 250</option></select></div>
             </div>
             <div className="space-y-4">
@@ -165,6 +179,10 @@ const DailyLogActivity = () => {
               <div className="grid grid-cols-3 gap-4 items-center"><label className="text-sm font-semibold text-slate-600">Equip Code</label><input disabled defaultValue="HVE AMB" className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm text-slate-500 font-mono" /></div>
               <div className="grid grid-cols-3 gap-4 items-center"><label className="text-sm font-semibold text-slate-600">HMU</label><input type="number" placeholder="0.0" className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" /></div>
               <div className="grid grid-cols-3 gap-4 items-center"><label className="text-sm font-semibold text-slate-600">Start Time</label><input type="datetime-local" className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold" /></div>
+              {/* TIME INPUTS */}
+              <div className="grid grid-cols-3 gap-4 items-center"><label className="text-sm font-semibold text-slate-600 italic">Waiting Labor</label><input type="number" placeholder="Hrs" value={waitLabor} onChange={(e) => setWaitLabor(e.target.value)} className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" /></div>
+              <div className="grid grid-cols-3 gap-4 items-center"><label className="text-sm font-semibold text-slate-600 italic">Waiting Part</label><input type="number" placeholder="Hrs" value={waitPart} onChange={(e) => setWaitPart(e.target.value)} className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" /></div>
+              <div className="grid grid-cols-3 gap-4 items-center"><label className="text-sm font-semibold text-slate-600 italic">Time Repair</label><input type="number" placeholder="Hrs" value={timeRepair} onChange={(e) => setTimeRepair(e.target.value)} className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" /></div>
             </div>
           </div>
           <hr className="border-slate-100" />
@@ -175,14 +193,14 @@ const DailyLogActivity = () => {
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-tight">Mekanik</label>
                 <div className="flex flex-wrap gap-2 p-2 bg-white border border-slate-200 rounded-lg min-h-[42px] focus-within:ring-2 focus-within:ring-blue-500">
                   {mechanics.map((name, index) => (<span key={index} className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs font-bold border border-blue-100">{name}<button onClick={() => removePerson('mechanic', index)} className="hover:text-red-500"><X size={14} /></button></span>))}
-                  <div className="flex-1 flex gap-2"><select onChange={(e) => setMechInput(e.target.value)} value={mechInput} className="flex-1 bg-transparent text-sm outline-none cursor-pointer"><option value="">+ Pilih Mekanik</option><option value="Budiono">Budiono</option><option value="Slamet">Slamet</option><option value="Anto">Anto</option><option value="Hadi">Hadi</option></select><button onClick={() => addPerson('mechanic')} className="p-1 bg-blue-600 text-white rounded hover:bg-blue-700"><UserPlus size={16}/></button></div>
+                  <div className="flex-1 flex gap-2"><select onChange={(e) => setMechInput(e.target.value)} value={mechInput} className="flex-1 bg-transparent text-sm outline-none cursor-pointer"><option value="">+ Pilih Mekanik</option><option value="Budiono">Budiono</option><option value="Slamet">Slamet</option><option value="Anto">Anto</option><option value="Hadi">Hadi</option></select><button onClick={() => addPerson('mechanic')} className="p-1 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"><UserPlus size={16}/></button></div>
                 </div>
               </div>
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-tight">Helper</label>
                 <div className="flex flex-wrap gap-2 p-2 bg-white border border-slate-200 rounded-lg min-h-[42px] focus-within:ring-2 focus-within:ring-blue-500">
                   {helpers.map((name, index) => (<span key={index} className="flex items-center gap-1 bg-green-50 text-green-700 px-2 py-1 rounded-md text-xs font-bold border border-green-100">{name}<button onClick={() => removePerson('helper', index)} className="hover:text-red-500"><X size={14} /></button></span>))}
-                  <div className="flex-1 flex gap-2"><select onChange={(e) => setHelperInput(e.target.value)} value={helperInput} className="flex-1 bg-transparent text-sm outline-none cursor-pointer"><option value="">+ Pilih Helper</option><option value="Joko">Joko</option><option value="Randi">Randi</option><option value="Eko">Eko</option><option value="Dedi">Dedi</option></select><button onClick={() => addPerson('helper')} className="p-1 bg-green-600 text-white rounded hover:bg-green-700"><UserPlus size={16}/></button></div>
+                  <div className="flex-1 flex gap-2"><select onChange={(e) => setHelperInput(e.target.value)} value={helperInput} className="flex-1 bg-transparent text-sm outline-none cursor-pointer"><option value="">+ Pilih Helper</option><option value="Joko">Joko</option><option value="Randi">Randi</option><option value="Eko">Eko</option><option value="Dedi">Dedi</option></select><button onClick={() => addPerson('helper')} className="p-1 bg-green-600 text-white rounded hover:bg-green-700 transition-colors"><UserPlus size={16}/></button></div>
                 </div>
               </div>
             </div>
@@ -194,34 +212,9 @@ const DailyLogActivity = () => {
           <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-3"><input list="unified-master" value={mainComp} onChange={(e) => setMainComp(e.target.value)} placeholder="Main Component..." className="border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" /><input list="failure-types" value={failType} onChange={(e) => setFailType(e.target.value)} placeholder="Failure Type..." className="border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" /><input list="action-types" value={actType} onChange={(e) => setActType(e.target.value)} placeholder="Action Type..." className="border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" /></div>
           <div className="px-4 pb-4 flex justify-end gap-2">{editingId !== null && (<button onClick={() => { setEditingId(null); setMainComp(""); setFailType(""); setActType(""); }} className="bg-slate-500 hover:bg-slate-600 text-white px-6 py-2 rounded-lg text-sm font-bold flex items-center gap-2"><RotateCcw size={18} /> CANCEL</button>)}<button onClick={handleAddActivity} className={`${editingId !== null ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-600 hover:bg-green-700'} text-white px-6 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors`}>{editingId !== null ? <Save size={18} /> : <Plus size={18} />}{editingId !== null ? 'UPDATE ACTIVITY' : 'ADD ACTIVITY'}</button></div>
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead className="bg-[#005a32] text-white font-bold border-y border-slate-200 tracking-tighter">
-                <tr><th className="px-6 py-3">System</th><th className="px-6 py-3">Sub-system</th><th className="px-6 py-3">Failure Type</th><th className="px-6 py-3">Action Type</th><th className="px-6 py-3">Spare Parts</th><th className="px-6 py-3 text-center">Qty</th><th className="px-6 py-3 text-right">Action</th></tr>
-              </thead>
-              <tbody className="font-bold uppercase">
-                {activities.length === 0 ? (<tr><td colSpan={7} className="px-6 py-12 text-center text-slate-400 italic">Belum ada data aktivitas</td></tr>) : (
-                  activities.map((act, index) => (<tr key={index} className="border-b border-slate-100 hover:bg-slate-50 transition-colors"><td className="px-6 py-4 text-blue-800">{act.system}</td><td className="px-6 py-4">{act.subSystem}</td><td className="px-6 py-4 text-red-700">{act.failure}</td><td className="px-6 py-4 text-green-700">{act.action}</td><td className="px-6 py-4"><div className="flex flex-col gap-1">{act.spareParts.map((p: any, i: number) => (<span key={i} className="text-[10px] bg-slate-50 px-2 py-0.5 rounded border border-slate-100">{p.name}</span>))}</div></td><td className="px-6 py-4 text-center"><div className="flex flex-col gap-1">{act.spareParts.map((p: any, i: number) => (<span key={i} className="text-[10px] font-black text-blue-600 px-2 py-0.5">x{p.qty}</span>))}</div></td><td className="px-6 py-4 text-right"><div className="flex flex-col gap-1 items-end"><button onClick={() => handleEdit(index)} className="bg-orange-500 text-white px-3 py-1 rounded text-[10px] w-20">EDIT</button><button onClick={() => { setTargetActivityIndex(index); setIsModalOpen(true); }} className="bg-blue-600 text-white px-3 py-1 rounded text-[10px] w-20">+ PART</button><button onClick={() => setActivities(activities.filter((_, i) => i !== index))} className="bg-red-600 text-white px-3 py-1 rounded text-[10px] w-20">DEL</button></div></td></tr>))
-                )}
-              </tbody>
-            </table>
+            <table className="w-full text-left text-sm border-collapse"><thead className="bg-[#005a32] text-white font-bold border-y border-slate-200 tracking-tighter"><tr><th className="px-6 py-3 uppercase">System</th><th className="px-6 py-3 uppercase">Sub-system</th><th className="px-6 py-3 uppercase text-red-100">Failure Type</th><th className="px-6 py-3 uppercase text-green-100">Action Type</th><th className="px-6 py-3 uppercase">Spare Parts</th><th className="px-6 py-3 text-center uppercase">Qty</th><th className="px-6 py-3 text-right uppercase">Action</th></tr></thead><tbody className="font-bold uppercase">{activities.length === 0 ? (<tr><td colSpan={7} className="px-6 py-12 text-center text-slate-400 italic">Belum ada data aktivitas</td></tr>) : (activities.map((act, index) => (<tr key={index} className="border-b border-slate-100 hover:bg-slate-50 transition-colors"><td className="px-6 py-4 text-blue-800">{act.system}</td><td className="px-6 py-4">{act.subSystem}</td><td className="px-6 py-4 text-red-700">{act.failure}</td><td className="px-6 py-4 text-green-700">{act.action}</td><td className="px-6 py-4"><div className="flex flex-col gap-1">{act.spareParts.map((p: any, i: number) => (<span key={i} className="text-[10px] bg-slate-50 px-2 py-0.5 rounded border border-slate-100">{p.name}</span>))}</div></td><td className="px-6 py-4 text-center"><div className="flex flex-col gap-1">{act.spareParts.map((p: any, i: number) => (<span key={i} className="text-[10px] font-black text-blue-600 px-2 py-0.5">x{p.qty}</span>))}</div></td><td className="px-6 py-4 text-right"><div className="flex flex-col gap-1 items-end"><button onClick={() => handleEdit(index)} className="bg-orange-500 text-white px-3 py-1 rounded text-[10px] w-20">EDIT</button><button onClick={() => { setTargetActivityIndex(index); setIsModalOpen(true); }} className="bg-blue-600 text-white px-3 py-1 rounded text-[10px] w-20">+ PART</button><button onClick={() => setActivities(activities.filter((_, i) => i !== index))} className="bg-red-600 text-white px-3 py-1 rounded text-[10px] w-20">DEL</button></div></td></tr>)))}</tbody></table>
           </div>
         </div>
-
-        <section className="mt-12 mb-20">
-          <div className="flex items-center gap-2 mb-4"><div className="h-6 w-1 bg-blue-600 rounded-full"></div><h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest">Recent - Activity Detail</h3></div>
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs md:text-sm border-collapse">
-                <thead className="bg-slate-50 border-b border-slate-200 text-slate-500 font-bold uppercase tracking-tighter">
-                  <tr><th className="px-4 py-4">No</th><th className="px-4 py-4">ID Log</th><th className="px-4 py-4">Kode Unit</th><th className="px-4 py-4">Nama Alat Berat</th><th className="px-4 py-4">Start Time</th><th className="px-4 py-4">Stop Time</th><th className="px-4 py-4">Type</th><th className="px-4 py-4">Status</th></tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  <tr className="hover:bg-slate-50/50 transition-colors"><td className="px-4 py-4 font-medium text-slate-600">1</td><td className="px-4 py-4 text-blue-600 font-semibold underline cursor-pointer">LOG-99283</td><td className="px-4 py-4 font-mono">HVE-AMB-01</td><td className="px-4 py-4">EXCAVATOR CAT 320</td><td className="px-4 py-4 whitespace-nowrap">2026-02-21 08:00</td><td className="px-4 py-4 whitespace-nowrap">2026-02-21 12:00</td><td className="px-4 py-4"><span className="bg-orange-100 text-orange-700 px-2 py-0.5 rounded text-[10px] font-bold">REPAIR</span></td><td className="px-4 py-4"><span className="bg-green-100 text-green-700 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-tight">Completed</span></td></tr> 
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </section>
 
         <div className="flex gap-3 justify-end items-center">
           <button className="px-6 py-2.5 rounded-lg text-white text-sm font-bold bg-red-500 hover:bg-red-600 transition-colors flex items-center gap-2"><X size={18} /> CANCEL</button>
@@ -234,11 +227,7 @@ const DailyLogActivity = () => {
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-2xl w-full max-w-xl overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-200">
             {!showQtySelection ? (
-              <><div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white"><h2 className="text-blue-700 font-bold uppercase tracking-tight flex items-center gap-2"><Search size={18} /> Item Search</h2><button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors"><X size={20} /></button></div><div className="bg-[#005a32] text-white p-3 font-bold text-xs uppercase flex justify-between"><span className="w-2/3">Nama Barang</span><span className="w-1/6 text-center">Stock</span><span className="w-1/6 text-right">Action</span></div><div className="max-h-96 overflow-y-auto">
-                  {sparePartsList.map((item, idx) => (
-                    <div key={idx} className="p-4 flex justify-between items-center border-b border-slate-50 hover:bg-slate-50 transition-colors"><span className="text-sm font-medium text-slate-700 w-2/3">{item.name}</span><span className={`text-xs font-black w-1/6 text-center ${item.stock < 10 ? 'text-red-600' : 'text-slate-500'}`}>{item.stock}</span><div className="w-1/6 text-right"><button onClick={() => initiateQtySelection(item)} className="bg-[#005a32] hover:bg-green-800 text-white px-4 py-1.5 rounded text-[10px] font-bold uppercase tracking-tighter shadow-sm active:scale-95 transition-all">SELECT</button></div></div>
-                  ))}
-                </div></>
+              <><div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white"><h2 className="text-blue-700 font-bold uppercase tracking-tight flex items-center gap-2"><Search size={18} /> Item Search</h2><button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors"><X size={20} /></button></div><div className="bg-[#005a32] text-white p-3 font-bold text-xs uppercase flex justify-between"><span className="w-2/3">Nama Barang</span><span className="w-1/6 text-center">Stock</span><span className="w-1/6 text-right">Action</span></div><div className="max-h-96 overflow-y-auto">{sparePartsList.map((item, idx) => (<div key={idx} className="p-4 flex justify-between items-center border-b border-slate-50 hover:bg-slate-50 transition-colors"><span className="text-sm font-medium text-slate-700 w-2/3">{item.name}</span><span className={`text-xs font-black w-1/6 text-center ${item.stock < 10 ? 'text-red-600' : 'text-slate-500'}`}>{item.stock}</span><div className="w-1/6 text-right"><button onClick={() => initiateQtySelection(item)} className="bg-[#005a32] hover:bg-green-800 text-white px-4 py-1.5 rounded text-[10px] font-bold uppercase tracking-tighter shadow-sm active:scale-95 transition-all">SELECT</button></div></div>))}</div></>
             ) : (
               <div className="p-8 text-center space-y-6">
                 <div className="mx-auto w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center shadow-inner"><Package size={32} /></div>

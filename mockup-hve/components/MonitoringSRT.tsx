@@ -1,27 +1,40 @@
 "use client";
 import { useState, useMemo } from 'react';
 import { 
-  AlertTriangle, Search, Download, Filter, Clock, History, 
+  AlertTriangle, Search, Download, Filter, History, 
   ChevronUp, ChevronDown
 } from 'lucide-react';
 
 const MonitoringSRT = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedPort, setSelectedPort] = useState("ALL PORTS");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [sortConfig, setSortConfig] = useState({ key: 'id', direction: 'asc' });
 
   // --- DUMMY DATA ---
   const initialActiveLogs = [
-    { id: 'LOG-001', type: 'REACH STACKER', name: 'HVE AMB 01 / JATAYU (-)', loc: 'AMBON', system: 'ENGINE', failureType: 'LEAKAGE', actionType: 'REPAIR', staff: 'Budi (M), Anto (H)', start: '03-03-2026', current: 6.0, target: 4.0, status: 'OVERDUE' },
-    { id: 'LOG-002', type: 'FORKLIFT', name: 'HVE JKT 05 / FL TCM', loc: 'JAKARTA', system: 'TRANSMISSION', failureType: 'WEAR', actionType: 'MAINTENANCE', staff: 'Yanto (M), Rian (H)', start: '03-03-2026', current: 2.5, target: 5.0, status: 'ON TRACK' },
-    { id: 'LOG-005', type: 'CRANE', name: 'HVE SBY 22 / RS KONE', loc: 'SURABAYA', system: 'HYDRAULIC', failureType: 'PRESSURE LOW', actionType: 'INSPECTION', staff: 'Slamet (M), Adi (H)', start: '03-03-2026', current: 1.2, target: 3.0, status: 'ON TRACK' },
+    { id: 'SPK-001', type: 'REACH STACKER', name: 'HVE AMB 01 / JATAYU (-)', loc: 'AMBON', system: 'ENGINE | FUEL SYSTEM', failureType: 'OLI BOCOR | OVERHEAT | RPM DROP', actionType: 'GANTI SEAL, CLEAN RADIATOR/COOLER, CLEAN JALUR SOLAR', staff: 'Budi (M), Anto (H)', start: '03-03-2026 08:30', current: 6.0, target: 4.0, status: 'OVERDUE' },
+    { id: 'SPK-002', type: 'FORKLIFT', name: 'HVE JKT 05 / FL TCM', loc: 'JAKARTA', system: 'TRANSMISSION', failureType: 'OVERHAUL | BOX FUSE LONGGAR', actionType: 'OVERHAUL & REPAIR POMPA TRANSMISI, GANTI BOX FUSE BARU', staff: 'Yanto (M), Rian (H)', start: '03-03-2026 14:15', current: 2.5, target: 5.0, status: 'ON TRACK' },
+    { id: 'SPK-005', type: 'CRANE', name: 'HVE SBY 22 / RS KONE', loc: 'SURABAYA', system: 'DRIVESHAFT', failureType: 'BAUT JOINT DRUM SWING KENDOR', actionType: 'PERBAIKI / GANTI BAUT JOINT & PLAT', staff: 'Slamet (M), Adi (H)', start: '04-03-2026 09:00', current: 1.2, target: 3.0, status: 'ON TRACK' },
   ];
 
   const initialHistoryLogs = [
-    { id: 'LOG-003', type: 'CRANE', name: 'HVE SBY 14 / RS KONE', loc: 'SURABAYA', system: 'ELECTRICAL', failureType: 'SHORT', actionType: 'REPAIR', staff: 'Agus P. (M), Dani (H)', start: '02-03-2026', end: '02-03-2026', labor: 0.5, part: 0.5, repair: 2.0, other: 0.5, final: 3.5, target: 4.0, status: 'ACHIEVED SRT' },
-    { id: 'LOG-004', type: 'REACH STACKER', name: 'HVE AMB 02 / BENGKEL', loc: 'AMBON', system: 'HYDRAULIC', failureType: 'BURST', actionType: 'REPLACE', staff: 'Heru (M), Jojo (H)', start: '01-03-2026', end: '01-03-2026', labor: 1.0, part: 2.0, repair: 3.0, other: 0.0, final: 6.0, target: 4.0, status: 'EXCEEDED SRT' },
-    { id: 'LOG-006', type: 'FORKLIFT', name: 'HVE JKT 09 / FL TCM', loc: 'JAKARTA', system: 'BRAKE', failureType: 'WORN PAD', actionType: 'REPLACE', staff: 'Doni (M), Eka (H)', start: '01-03-2026', end: '01-03-2026', labor: 0.2, part: 1.0, repair: 1.0, other: 0.0, final: 2.2, target: 3.0, status: 'ACHIEVED SRT' },
+    { id: 'SPK-003', type: 'CRANE', name: 'HVE SBY 14 / RS KONE', loc: 'SURABAYA', system: 'ELECTRICAL', failureType: 'SHORT', actionType: 'REPAIR', staff: 'Agus P. (M), Dani (H)', start: '02-03-2026 08:00', end: '02-03-2026 11:30', labor: 0.5, part: 0.5, repair: 2.0, other: 0.5, final: 3.5, target: 4.0, status: 'ACHIEVED SRT' },
+    { id: 'SPK-004', type: 'REACH STACKER', name: 'HVE AMB 02 / BENGKEL', loc: 'AMBON', system: 'HYDRAULIC', failureType: 'BURST', actionType: 'REPLACE', staff: 'Heru (M), Jojo (H)', start: '01-03-2026 10:00', end: '01-03-2026 16:00', labor: 1.0, part: 2.0, repair: 3.0, other: 0.0, final: 6.0, target: 4.0, status: 'EXCEEDED SRT' },
+    { id: 'SPK-006', type: 'FORKLIFT', name: 'HVE JKT 09 / FL TCM', loc: 'JAKARTA', system: 'BRAKE', failureType: 'WORN PAD', actionType: 'REPLACE', staff: 'Doni (M), Eka (H)', start: '01-03-2026 13:00', end: '01-03-2026 15:12', labor: 0.2, part: 1.0, repair: 1.0, other: 0.0, final: 2.2, target: 3.0, status: 'ACHIEVED SRT' },
   ];
+
+  const parseDateString = (dateStr: string) => {
+    const [datePart, timePart] = dateStr.split(' ');
+    const [day, month, year] = datePart.split('-').map(Number);
+    const date = new Date(year, month - 1, day);
+    if (timePart) {
+      const [hours, minutes] = timePart.split(':').map(Number);
+      date.setHours(hours, minutes, 0, 0);
+    }
+    return date;
+  };
 
   const requestSort = (key: string) => {
     let direction = 'asc';
@@ -53,11 +66,24 @@ const MonitoringSRT = () => {
         log.name.toLowerCase().includes(query) || log.type.toLowerCase().includes(query) || log.id.toLowerCase().includes(query) || log.staff.toLowerCase().includes(query)
       );
     }
+
+    // --- DATE PERIOD FILTER LOGIC ---
+    if (startDate) {
+      const startOfDay = new Date(startDate);
+      startOfDay.setHours(0, 0, 0, 0);
+      data = data.filter(log => parseDateString(log.start) >= startOfDay);
+    }
+    if (endDate) {
+      const endOfDay = new Date(endDate);
+      endOfDay.setHours(23, 59, 59, 999);
+      data = data.filter(log => parseDateString(log.start) <= endOfDay);
+    }
+
     return data;
   };
 
-  const filteredActive = useMemo(() => filterEngine(initialActiveLogs), [searchQuery, selectedPort, sortConfig]);
-  const filteredHistory = useMemo(() => filterEngine(initialHistoryLogs), [searchQuery, selectedPort, sortConfig]);
+  const filteredActive = useMemo(() => filterEngine(initialActiveLogs), [searchQuery, selectedPort, startDate, endDate, sortConfig]);
+  const filteredHistory = useMemo(() => filterEngine(initialHistoryLogs), [searchQuery, selectedPort, startDate, endDate, sortConfig]);
 
   const SortIcon = ({ field }: { field: string }) => {
     if (sortConfig.key !== field) return <ChevronDown size={12} className="opacity-20" />;
@@ -71,24 +97,7 @@ const MonitoringSRT = () => {
         <AlertTriangle className="text-red-600 shrink-0" size={20} />
         <div>
           <h4 className="text-red-800 font-bold text-sm uppercase tracking-tight">Warning! High Priority Overdue:</h4>
-          <p className="text-red-700 text-xs mt-0.5">• [LOG-001] HVE AMB 01 / JATAYU (-) exceeds SRT Target by 2.0h.</p>
-        </div>
-      </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2 block">Active Breakdown</span>
-          <div className="text-4xl font-black text-red-600">3 <span className="text-xs font-bold text-slate-400">UNIT</span></div>
-        </div>
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2 block">Active Overdue SRT</span>
-          <div className="text-4xl font-black text-orange-500">1 <span className="text-xs font-bold text-slate-400">KASUS</span></div>
-        </div>
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2 block">Compliance Rate</span>
-          <div className="text-4xl font-black text-blue-600">66%</div>
-          <div className="w-full bg-slate-100 h-1.5 rounded-full mt-4 overflow-hidden"><div className="bg-blue-600 h-full w-2/3"></div></div>
+          <p className="text-red-700 text-xs mt-0.5">• [SPK-001] HVE AMB 01 / JATAYU (-) exceeds SRT Target by 2.0h.</p>
         </div>
       </div>
 
@@ -96,9 +105,9 @@ const MonitoringSRT = () => {
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
         <div className="flex items-center justify-between mb-6 border-b pb-4 border-slate-100 uppercase tracking-tighter font-bold">
           <div className="flex items-center gap-2"><Filter size={18} className="text-blue-600" /> Filter Analysis</div>
-          <button onClick={() => {setSearchQuery(""); setSelectedPort("ALL PORTS");}} className="text-[10px] text-blue-600 hover:underline">Reset All Filters</button>
+          <button onClick={() => {setSearchQuery(""); setSelectedPort("ALL PORTS"); setStartDate(""); setEndDate("");}} className="text-[10px] text-blue-600 hover:underline">Reset All Filters</button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
           <div className="md:col-span-2 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
             <input type="text" placeholder="Search Equipment..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 font-medium" />
@@ -109,11 +118,36 @@ const MonitoringSRT = () => {
             <option value="JKT - JAKARTA">JAKARTA (JKT)</option>
             <option value="AMB - AMBON">AMBON (AMB)</option>
           </select>
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 font-bold"><Clock size={14} className="text-slate-400" /><input type="date" className="bg-transparent text-[10px] outline-none w-full" /></div>
+          {/* Date Period Filters */}
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 font-bold">
+            <span className="text-[9px] text-slate-400 uppercase tracking-widest">From:</span>
+            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-transparent text-[10px] outline-none w-full cursor-pointer" />
+          </div>
+          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 font-bold">
+            <span className="text-[9px] text-slate-400 uppercase tracking-widest">To:</span>
+            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="bg-transparent text-[10px] outline-none w-full cursor-pointer" />
+          </div>
         </div>
       </div>
 
-      {/* Tables Section */}
+      {/* KPI Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2 block">Active Downtime</span>
+          <div className="text-4xl font-black text-red-600">{filteredActive.length} <span className="text-xs font-bold text-slate-400">UNIT</span></div>
+        </div>
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2 block">Active Overdue SRT</span>
+          <div className="text-4xl font-black text-orange-500">{filteredActive.filter(l => l.status === 'OVERDUE').length} <span className="text-xs font-bold text-slate-400">KASUS</span></div>
+        </div>
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+          <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2 block">Compliance Rate</span>
+          <div className="text-4xl font-black text-blue-600">66%</div>
+          <div className="w-full bg-slate-100 h-1.5 rounded-full mt-4 overflow-hidden"><div className="bg-blue-600 h-full w-2/3"></div></div>
+        </div>
+      </div>
+
+      {/* Active Downtime Table */}
       <section className="space-y-3">
         <div className="flex justify-between items-center">
           <h2 className="text-red-600 font-black italic flex items-center gap-2 text-sm tracking-tight uppercase">
@@ -125,16 +159,16 @@ const MonitoringSRT = () => {
           <table className="w-full text-[11px] border-collapse min-w-[1400px]">
             <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 uppercase tracking-tighter text-left">
               <tr className="divide-x divide-slate-100">
-                <th onClick={() => requestSort('id')} className="px-4 py-4 cursor-pointer hover:bg-slate-100 transition-colors">ID LOG <SortIcon field="id" /></th>
-                <th className="px-4 py-4">JENIS ALAT</th>
-                <th onClick={() => requestSort('name')} className="px-4 py-4 cursor-pointer hover:bg-slate-100 transition-colors">EQUIP NAME <SortIcon field="name" /></th>
-                <th className="px-4 py-4 text-center">LOKASI</th>
-                <th className="px-4 py-4">SYSTEM & SUB-SYSTEM</th>
-                <th className="px-4 py-4">FAILURE TYPE</th>
-                <th className="px-4 py-4">ACTION TYPE</th>
-                <th className="px-4 py-4 text-blue-800">MEKANIK & HELPER</th>
+                <th onClick={() => requestSort('id')} className="px-4 py-4 cursor-pointer hover:bg-slate-100">NO. SPK<SortIcon field="id" /></th>
+                <th className="px-4 py-4">EQUIP TYPE</th>
+                <th onClick={() => requestSort('name')} className="px-4 py-4 cursor-pointer hover:bg-slate-100">EQUIP NAME <SortIcon field="name" /></th>
+                <th className="px-4 py-4 text-center">LOCATION</th>
+                <th className="px-4 py-4">START TIME (DT)</th>
+                <th className="px-4 py-4">SYSTEM</th>
+                <th className="px-4 py-4 text-red-600">FAILURE TYPE</th>
+                <th className="px-4 py-4 text-blue-800">MECHANIC & HELPER</th>
                 <th onClick={() => requestSort('current')} className="px-4 py-4 text-center bg-red-50/30 cursor-pointer">CURRENT DT (H) <SortIcon field="current" /></th>
-                <th className="px-4 py-4 text-center">STATUS</th>
+                <th className="px-4 py-4 text-center">STATUS SRT</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 font-medium uppercase">
@@ -144,9 +178,21 @@ const MonitoringSRT = () => {
                   <td className="px-4 py-4 text-slate-600">{log.type}</td>
                   <td className="px-4 py-4 font-black text-red-600 tracking-tighter">{log.name}</td>
                   <td className="px-4 py-4 text-center text-slate-400 font-bold">{log.loc}</td>
-                  <td className="px-4 py-4 font-black text-slate-800 text-[10px] leading-tight">{log.system}</td>
-                  <td className="px-4 py-4 font-black text-red-600 text-[10px]">{log.failureType}</td>
-                  <td className="px-4 py-4 font-medium text-slate-400 italic text-[10px]">{log.actionType}</td>
+                  <td className="px-4 py-4 font-mono text-slate-700 bg-slate-50/50">{log.start}</td>
+                  <td className="px-4 py-4 font-black text-slate-800 text-[10px] leading-tight">
+                    <div className="flex flex-col gap-1">
+                      {log.system.split(' | ').map((system, i) => (
+                        <div key={i} className="leading-tight border-b border-slate-100 last:border-0 pb-1 last:pb-0">{system.trim()}</div>
+                      ))}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 font-black text-red-600 text-[10px]">
+                    <div className="flex flex-col gap-1">
+                      {log.failureType.split(' | ').map((fail, i) => (
+                        <div key={i} className="leading-tight border-b border-red-50 last:border-0 pb-1 last:pb-0">{fail.trim()}</div>
+                      ))}
+                    </div>
+                  </td>
                   <td className="px-4 py-4 font-bold text-blue-800">{log.staff}</td>
                   <td className="px-4 py-4 text-center bg-red-50/20 font-black text-red-600 text-base leading-none">
                     {log.current.toFixed(1)} <br/><span className="text-[8px] text-slate-400 font-bold uppercase">Target: {log.target}h</span>
@@ -159,33 +205,41 @@ const MonitoringSRT = () => {
         </div>
       </section>
 
+      {/* Historical Log Table */}
       <section className="space-y-3 pt-6 border-t border-slate-200">
         <h2 className="text-blue-700 font-black italic flex items-center gap-2 text-sm tracking-tight uppercase"><History size={18} className="text-blue-600" /> Historical Log</h2>
         <div className="bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden overflow-x-auto">
           <table className="w-full text-[10px] border-collapse min-w-[1600px]">
             <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 uppercase tracking-tighter text-left">
               <tr className="divide-x divide-slate-100">
-                <th rowSpan={2} className="px-2 py-4 text-center">ID LOG</th>
-                <th rowSpan={2} className="px-2 py-4">JENIS ALAT</th>
+                <th rowSpan={2} className="px-2 py-4 text-center">NO. SPK</th>
                 <th rowSpan={2} className="px-2 py-4">EQUIP NAME</th>
-                <th rowSpan={2} className="px-2 py-4 text-center">LOKASI</th>
-                <th rowSpan={2} className="px-2 py-4 text-blue-800">MEKANIK & HELPER</th>
-                <th colSpan={5} className="px-2 py-2 text-center bg-yellow-50/50 border-b border-slate-200 text-yellow-700 tracking-widest text-[9px]">BREAKDOWN WAKTU (HOURS)</th>
-                <th rowSpan={2} className="px-2 py-4 text-center bg-blue-50/50 text-blue-700">Target</th>
-                <th rowSpan={2} className="px-2 py-4 text-center">STATUS</th>
+                <th rowSpan={2} className="px-2 py-4 text-center">LOCATION</th>
+                <th rowSpan={2} className="px-2 py-4 text-blue-800">MECHANIC & HELPER</th>
+                <th colSpan={2} className="px-2 py-2 text-center bg-blue-50/30 border-b border-blue-100 text-blue-700 tracking-widest text-[9px]">DATETIME LOG</th>
+                <th colSpan={5} className="px-2 py-2 text-center bg-yellow-50/50 border-b border-slate-200 text-yellow-700 tracking-widest text-[9px]">DOWNTIME (HOURS)</th>
+                <th rowSpan={2} className="px-2 py-4 text-center bg-blue-50/50 text-blue-700">Target SRT</th>
+                <th rowSpan={2} className="px-2 py-4 text-center">STATUS SRT</th>
               </tr>
-              <tr className="divide-x divide-slate-200 text-[8px] bg-yellow-50/20 text-yellow-600 text-center uppercase">
-                <th>Labor</th><th>Part</th><th>Repair</th><th>Other</th><th className="font-black text-red-600 bg-yellow-100/50">Final DT</th>
+              <tr className="divide-x divide-slate-200 text-[8px] uppercase">
+                <th className="bg-blue-50/20 text-blue-600">Start Time</th>
+                <th className="bg-blue-50/20 text-blue-600">End Time</th>
+                <th className="bg-yellow-50/20 text-yellow-600">W/ Labor</th>
+                <th className="bg-yellow-50/20 text-yellow-600">W/ Part</th>
+                <th className="bg-yellow-50/20 text-yellow-600">Repair</th>
+                <th className="bg-yellow-50/20 text-yellow-600">Other</th>
+                <th className="font-black text-red-600 bg-yellow-100/50">Final DT</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 font-medium">
               {filteredHistory.map((log) => (
                 <tr key={log.id} className="hover:bg-slate-50 transition-colors divide-x divide-slate-100 uppercase">
                   <td className="px-2 py-4 text-blue-600 font-black underline text-center">{log.id}</td>
-                  <td className="px-2 py-4 text-slate-500 font-semibold">{log.type}</td>
                   <td className="px-2 py-4 font-black text-slate-800 tracking-tighter">{log.name}</td>
                   <td className="px-2 py-4 text-center text-slate-400 font-bold">{log.loc}</td>
                   <td className="px-2 py-4 text-blue-700 font-black text-[9px] leading-tight">{log.staff}</td>
+                  <td className="px-2 py-4 font-mono text-[9px] text-slate-600 bg-blue-50/10">{log.start}</td>
+                  <td className="px-2 py-4 font-mono text-[9px] text-slate-600 bg-blue-50/10">{log.end}</td>
                   <td className="px-2 py-4 text-center font-bold">{log.labor.toFixed(1)}</td>
                   <td className="px-2 py-4 text-center font-bold">{log.part.toFixed(1)}</td>
                   <td className="px-2 py-4 text-center font-bold">{log.repair.toFixed(1)}</td>
@@ -201,7 +255,7 @@ const MonitoringSRT = () => {
       </section>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-10">
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Compliance Status</h3>
@@ -219,10 +273,9 @@ const MonitoringSRT = () => {
              ))}
           </div>
         </div>
-
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex justify-between items-center mb-6 text-xs font-black uppercase tracking-widest">
-            <h3 className="text-slate-400">Equip Performance</h3>
+            <h3 className="text-slate-400">Equip Performance (Filtered)</h3>
             <div className="px-3 py-1 bg-slate-50 rounded text-[9px] text-blue-600 border border-blue-100">Compliance %</div>
           </div>
           <div className="space-y-4">
