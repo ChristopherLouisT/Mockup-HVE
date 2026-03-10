@@ -86,7 +86,8 @@ Reinstall Node.js and restart your computer.
 
 ------------------------------------------------------------------------
 
-# 🛑 To Stop the App
+# 🔥 To Pull The Recent Changes of the App
+
 
 Click the black window and press:
 
@@ -96,7 +97,7 @@ Then enter
 
 ------------------------------------------------------------------------
 
-# 🛑 To Pull The Recent Changes of the App
+# 🛑 To Stop the App
 
 Open The Terminal in the VSCode(View -> Terminal or Ctrl + `) and type:
 
