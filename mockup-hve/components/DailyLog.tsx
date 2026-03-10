@@ -54,16 +54,32 @@ const DailyLogActivity = () => {
   const handleEquipChange = (name: string) => {
     setEquipName(name);
     if (equipRegistry[name]) {
-      setNoSPK(equipRegistry[name].spk);
       setNoLOKB(equipRegistry[name].lokb);
       setNoLOKK(equipRegistry[name].lokk);
     } else {
-      setNoSPK(""); setNoLOKB(""); setNoLOKK("");
+      setNoLOKB(""); 
+      setNoLOKK("");
     }
   };
 
   const toggleLaporanSelection = (id: string) => {
-    setSelectedLaporan(prev => prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]);
+
+    let updated: string[];
+
+    if (selectedLaporan.includes(id)) {
+      updated = selectedLaporan.filter(item => item !== id);
+    } else {
+      updated = [...selectedLaporan, id];
+    }
+
+    setSelectedLaporan(updated);
+
+    if (updated.length > 0) {
+      const random = Math.floor(Math.random() * 999);
+      setNoSPK(`SPK-${new Date().getFullYear()}-${random.toString().padStart(3,'0')}`);
+    } else {
+      setNoSPK("");
+    }
   };
 
   // Master Data From EXCEL
@@ -539,7 +555,7 @@ const DailyLogActivity = () => {
                 <div className="mx-auto w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center shadow-inner">
                   <Package size={32} />
                 </div>
-                
+
                 <div className="space-y-1">
                   <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Set Quantity</h3>
                   <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">{tempSelectedPart}</p>
