@@ -88,8 +88,7 @@ Reinstall Node.js and restart your computer.
 
 # 🔥 To Pull The Recent Changes of the App
 
-
-Click the black window and press:
+Open The Terminal in the VSCode(View(On Top Left) -> Terminal or Ctrl + `) and type:
 
     git pull origin main
 
@@ -99,7 +98,7 @@ Then enter
 
 # 🛑 To Stop the App
 
-Open The Terminal in the VSCode(View -> Terminal or Ctrl + `) and type:
+Click the black window and press:
 
     CTRL + C
 
