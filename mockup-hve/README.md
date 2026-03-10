@@ -90,6 +90,16 @@ Reinstall Node.js and restart your computer.
 
 Click the black window and press:
 
+    git pull origin main
+
+Then enter
+
+------------------------------------------------------------------------
+
+# 🛑 To Pull The Recent Changes of the App
+
+Open The Terminal in the VSCode(View -> Terminal or Ctrl + `) and type:
+
     CTRL + C
 
 Then press:
