@@ -27,6 +27,31 @@ const DailyLogActivity = () => {
     { id: "LOG-2026-005", date: "2026-10-05", reporter: "Vin", category: "Maintenance", details: "Oli netes dari engine", notes: "[2026/10/07 - Toni] Perlu rutin tambah oli, perbaikan pada next PM" }
   ];
 
+  // PM
+  const [selectedPM, setSelectedPM] = useState<string[]>([]);
+  const pmMasterList = [
+    {
+      id: "PM-500",
+      currentHM: 490,
+      hmTarget: "487 - 587",
+      avgHM: 14,
+      datePrediction: "17 March 2026 - 24 March 2026"
+    }
+  ];
+
+  const generateRandomReports = () => {
+    const randomLaporan =
+      laporanMasterList[Math.floor(Math.random() * laporanMasterList.length)];
+
+    const randomPM =
+      pmMasterList[Math.floor(Math.random() * pmMasterList.length)];
+
+    setSelectedLaporan([randomLaporan.id]);
+    setSelectedPM([randomPM.id]);
+  };
+
+  const combinedReports = [...selectedLaporan, ...selectedPM];
+
   // Timing State
   const [waitLabor, setWaitLabor] = useState("");
   const [waitPart, setWaitPart] = useState("");
@@ -54,9 +79,12 @@ const DailyLogActivity = () => {
   const handleEquipChange = (name: string) => {
     setEquipName(name);
     if (equipRegistry[name]) {
+      generateRandomReports();
+      setNoSPK(`SPK-${new Date().getFullYear()}-${Math.floor(Math.random() * 999).toString().padStart(3,'0')}`);
       setNoLOKB(equipRegistry[name].lokb);
       setNoLOKK(equipRegistry[name].lokk);
     } else {
+      setNoSPK("");
       setNoLOKB(""); 
       setNoLOKK("");
     }
@@ -264,7 +292,7 @@ const DailyLogActivity = () => {
               <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Settings size={16} /> Equipment Details</h3>
               
               <div className="grid grid-cols-3 gap-4 items-center">
-                <label className="text-sm font-semibold text-slate-600">Lokasi</label>
+                <label className="text-sm font-semibold text-slate-600">Location</label>
                 <select className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
                   <option>SPIL Kalianak</option>
                   <option>Depo 4</option>
@@ -285,31 +313,47 @@ const DailyLogActivity = () => {
 
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-tight">No. SPK</label>
-                <input disabled value={noSPK} className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-700" />
+                <input disabled value={noSPK} className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-700" placeholder="Select Equipment & Location First..."/>
               </div>
 
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-tight">No. Laporan</label>
-                <div onClick={() => setIsLaporanModalOpen(true)} 
-                className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-600 cursor-pointer 
+                <div 
+                className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-600 cursor-pointer 
                 hover:border-blue-400 transition-colors min-h-[38px] flex items-center flex-wrap gap-1">
-                  {selectedLaporan.length > 0 ? selectedLaporan.map(id => (
-                    <span key={id} className="bg-blue-100 px-1.5 py-0.5 rounded text-[10px] font-bold border border-blue-200">{id}</span>)) 
-                    : 
-                    <span className="text-slate-400 italic">Pilih Laporan...</span>}
+                  {combinedReports.length > 0 ? (
+                    combinedReports.map((id) => (
+                      <span key={id} className={`px-1.5 py-0.5 rounded text-[10px] font-bold border
+                        ${id.startsWith("PM")
+                          ? "bg-green-100 border-green-200 text-green-700"
+                          : "bg-blue-100 border-blue-200 text-blue-700"
+                        }`}>
+                        {id}
+                      </span>
+                    ))
+                  ) 
+                  :
+                  (
+                    <span className="text-slate-400 italic">
+                      Select Equipment & Location First...
+                    </span>
+                  )}
                 </div>
               </div>
 
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-tight">No. LOKB</label>
-                <input disabled value={noLOKB} className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-700" />
+                <input disabled value={noLOKB} className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-700" placeholder="Select Equipment & Location First..."/>
               </div>
 
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-tight">No. LOKK</label>
-                <input disabled value={noLOKK} className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-700" />
+                <input disabled value={noLOKK} className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-700" placeholder="Select Equipment & Location First..."/>
               </div>
+            </div>
 
+            <div className="space-y-4">
+              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Clock size={16} /> Operational Data</h3>
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-sm font-semibold text-slate-600">Activity Type</label>
                 <select className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
@@ -318,11 +362,6 @@ const DailyLogActivity = () => {
                   <option>05. PM 250</option>
                 </select>
               </div>
-
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Clock size={16} /> Operational Data</h3>
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-sm font-semibold text-slate-600">HMU</label>
                 <input type="number" placeholder="0.0" className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />

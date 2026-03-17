@@ -13,13 +13,22 @@ const Navbar = () => {
         <h1 className="text-xl font-bold text-blue-900 tracking-tight">HEAVY EQUIPMENT</h1>
         <nav className="flex gap-4">
           <Link 
+            href="/spk" 
+            className={`text-sm font-semibold pb-1 transition-colors ${
+              isActive('/spk') 
+                ? 'text-blue-600 border-b-2 border-blue-600' 
+                : 'text-slate-500 hover:text-slate-800 border-b-2 border-transparent'
+            }`}>
+            CREATE SPK
+          </Link>
+          <Link 
             href="/" 
             className={`text-sm font-semibold pb-1 transition-colors ${
               isActive('/') 
                 ? 'text-blue-600 border-b-2 border-blue-600' 
                 : 'text-slate-500 hover:text-slate-800 border-b-2 border-transparent'
             }`}>
-            TRANSAKSI
+            TRANSACTION
           </Link>
           <Link 
             href="#" 

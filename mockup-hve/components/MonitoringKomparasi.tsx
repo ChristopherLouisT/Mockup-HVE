@@ -9,6 +9,7 @@ const MonitoringKomparasi = () => {
   // 1. State for Selection
   const [unitA, setUnitA] = useState("HVE SBY 14");
   const [unitB, setUnitB] = useState("HVE AMB 01");
+  const [tooltip, setTooltip] = useState<any>(null);
 
   // 2. Dummy Data (3 units with different profiles)
   const unitData: any = {
@@ -84,6 +85,40 @@ const MonitoringKomparasi = () => {
       return `${x},${y}`;
     }).join(' ');
   };
+
+  const getRadarPoints = (data: any) => {
+      const scores = [
+        (data.avail - 50) * 2,
+        (data.mtbf / 500) * 80,
+        (10 - data.mttr) * 8,
+        (400 - data.downtime) / 5,
+        (30 - data.freq) * 2.6
+      ];
+
+      const angleStep = (Math.PI * 2) / 5;
+      const centerX = 100;
+      const centerY = 100;
+
+      return scores.map((score, i) => {
+        const angle = i * angleStep - Math.PI / 2;
+
+        const x = centerX + Math.max(10, score) * Math.cos(angle);
+        const y = centerY + Math.max(10, score) * Math.sin(angle);
+
+        return { x, y, score };
+      });
+    };
+
+  const radarLabels = [
+      "Availability",
+      "MTBF",
+      "MTTR",
+      "Downtime",
+      "Frequency"
+    ];
+
+  const pointsA = getRadarPoints(dataA);
+  const pointsB = getRadarPoints(dataB);
 
   return (
     <div className="space-y-6 animate-in fade-in duration-700">
@@ -164,8 +199,41 @@ const MonitoringKomparasi = () => {
                 <line x1="100" y1="100" x2="20" y2="70" stroke="#cbd5e1" strokeDasharray="2" />
 
                 {/* Dynamic Shapes */}
-                <polygon points={getRadarPath(dataA)} fill="rgba(0, 90, 50, 0.15)" stroke="#005a32" strokeWidth="3" strokeLinejoin="round" className="transition-all duration-1000" />
-                <polygon points={getRadarPath(dataB)} fill="rgba(37, 99, 235, 0.15)" stroke="#2563eb" strokeWidth="3" strokeLinejoin="round" className="transition-all duration-1000" />
+                <polygon points={getRadarPath(dataA)} fill="rgba(0, 90, 50, 0.15)" stroke="#005a32" strokeWidth="3" 
+                strokeLinejoin="round" className="transition-all duration-1000" pointerEvents="none" />
+                {/* Hover Points */}
+                  {pointsA.map((p, i) => (
+                    <circle key={`a-${i}`} cx={p.x} cy={p.y} r="6"
+                      fill="transparent"
+                      onMouseEnter={() =>
+                        setTooltip({
+                          x: p.x, y: p.y,
+                          label: radarLabels[i],
+                          valueA: dataA[["avail","mtbf","mttr","downtime","freq"][i]],
+                          valueB: dataB[["avail","mtbf","mttr","downtime","freq"][i]]
+                        })
+                      }
+                      onMouseLeave={() => setTooltip(null)}
+                    />
+                  ))}
+
+                <polygon points={getRadarPath(dataB)} fill="rgba(37, 99, 235, 0.15)" stroke="#2563eb" strokeWidth="3"
+                strokeLinejoin="round" className="transition-all duration-1000" pointerEvents="none"/>
+                {/* Hover Points */}
+                  {pointsB.map((p, i) => (
+                    <circle key={`b-${i}`} cx={p.x} cy={p.y} r="6"
+                      fill="transparent"
+                      onMouseEnter={() =>
+                        setTooltip({
+                          x: p.x, y: p.y,
+                          label: radarLabels[i],
+                          valueA: dataA[["avail","mtbf","mttr","downtime","freq"][i]],
+                          valueB: dataB[["avail","mtbf","mttr","downtime","freq"][i]]
+                        })
+                      }
+                      onMouseLeave={() => setTooltip(null)}
+                    />
+                  ))}
 
                 {/* AXIS LABELS */}
                 <text x="100" y="5" textAnchor="middle" className="text-[9px] font-black fill-slate-500 uppercase tracking-tighter">Availability % (Top)</text>
@@ -173,6 +241,24 @@ const MonitoringKomparasi = () => {
                 <text x="160" y="190" textAnchor="start" className="text-[9px] font-black fill-slate-500 uppercase tracking-tighter">MTTR Score (Bot R)</text>
                 <text x="40" y="190" textAnchor="end" className="text-[9px] font-black fill-slate-500 uppercase tracking-tighter">Downtime Score (Bot L)</text>
                 <text x="10" y="65" textAnchor="end" className="text-[9px] font-black fill-slate-500 uppercase tracking-tighter">Freq Score (Top L)</text>
+
+                {tooltip && (
+                  <g transform={`translate(${tooltip.x}, ${tooltip.y - 12})`}>
+                    <rect x="-75" y="-35"
+                      width="150" height="30"
+                      rx="4" fill="#0f172a"opacity="0.9"/>
+                    <text x="0" y="-22"
+                      textAnchor="middle" fill="white"
+                      fontSize="8" fontWeight="bold">
+                      {tooltip.label}
+                    </text>
+                    <text x="0" y="-10"
+                      textAnchor="middle" fill="white"
+                      fontSize="8">
+                      {unitA}: {tooltip.valueA} | {unitB}: {tooltip.valueB}
+                    </text>
+                  </g>
+                )}
              </svg>
           </div>
 
