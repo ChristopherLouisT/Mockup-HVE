@@ -16,6 +16,15 @@ const DailyLogActivity = () => {
   const [noLOKB, setNoLOKB] = useState("");
   const [noLOKK, setNoLOKK] = useState("");
 
+  // Master Data From EXCEL
+  const masterStandardData = [
+    { component: "[0-0] SCHEDULED MAINT. (PM)", failures: ["Unit Kotor", "General Check", "Greasing Berkala", "Preventive Maintenance"], actions: ["Cuci Unit", "General Check", "Greasing Komponen", "Preventive Maintenance"] },
+    { component: "[01-0] AC (CAB & BODY)", failures: ["Ac Kurang Dingin"], actions: ["Cleaning Ac"] },
+    { component: "[01-1] CAB STRUCTURE & GLASS (CAB & BODY)", failures: ["Wiper Tersendat", "Kaca Kabin Pecah", "Pintu Tidak Bisa Lock"], actions: ["Cek Motor Wiper", "Ganti Kaca Akrilik", "Perbaikan Engsel / Mekanisme Lock"] },
+    { component: "[08-1] STRUCTURE & EXT. (TRAILER)", failures: ["Rumah Lock Rusak", "Tangga Patah", "Spakbor Patah"], actions: ["Las / Ganti Rumah Lock", "Repair Tangga", "Las Spakbor"] },
+    { component: "[09-0] HOIST WINCH (CRANE)", failures: ["Pin Rem Cargo Lepas", "Kawat Boom & Cargo Aus", "Ganti Sling Cargo"], actions: ["Perbaiki Pin Rem Drum Cargo", "Greasing Kawat", "Ganti Sling Cargo"] }
+  ];
+
   // --- Laporan Selection State ---
   const [isLaporanModalOpen, setIsLaporanModalOpen] = useState(false);
   const [selectedLaporan, setSelectedLaporan] = useState<string[]>([]);
@@ -64,6 +73,52 @@ const DailyLogActivity = () => {
   const [failType, setFailType] = useState("");
   const [actType, setActType] = useState("");
   const [editingId, setEditingId] = useState<number | null>(null);
+  
+  // Search Recommendation Logic
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<any[]>([]);
+
+  const flattenedData = useMemo(() => {
+    const result: any[] = [];
+
+    masterStandardData.forEach((item) => {
+      item.failures.forEach((failure, idx) => {
+        result.push({
+          component: item.component,
+          failure: failure,
+          action: item.actions[idx] || item.actions[0] || ""
+        });
+      });
+    });
+
+    return result;
+  }, []);
+
+  useMemo(() => {
+    if (!searchQuery) {
+      setSearchResults([]);
+      return;
+    }
+
+    const q = searchQuery.toLowerCase();
+
+    const filtered = flattenedData.filter((item) =>
+      item.component.toLowerCase().includes(q) ||
+      item.failure.toLowerCase().includes(q) ||
+      item.action.toLowerCase().includes(q)
+    );
+
+    setSearchResults(filtered.slice(0, 8)); // limit results
+  }, [searchQuery, flattenedData]);
+
+  const handleSelectSearch = (item: any) => {
+    setMainComp(item.component);
+    setFailType(item.failure);
+    setActType(item.action);
+
+    setSearchQuery("");
+    setSearchResults([]);
+  };
 
   // Auto-fill Mapping
   const equipRegistry: any = {
@@ -109,15 +164,6 @@ const DailyLogActivity = () => {
       setNoSPK("");
     }
   };
-
-  // Master Data From EXCEL
-  const masterStandardData = [
-    { component: "[0-0] SCHEDULED MAINT. (PM)", failures: ["Unit Kotor", "General Check", "Greasing Berkala", "Preventive Maintenance"], actions: ["Cuci Unit", "General Check", "Greasing Komponen", "Preventive Maintenance"] },
-    { component: "[01-0] AC (CAB & BODY)", failures: ["Ac Kurang Dingin"], actions: ["Cleaning Ac"] },
-    { component: "[01-1] CAB STRUCTURE & GLASS (CAB & BODY)", failures: ["Wiper Tersendat", "Kaca Kabin Pecah", "Pintu Tidak Bisa Lock"], actions: ["Cek Motor Wiper", "Ganti Kaca Akrilik", "Perbaikan Engsel / Mekanisme Lock"] },
-    { component: "[08-1] STRUCTURE & EXT. (TRAILER)", failures: ["Rumah Lock Rusak", "Tangga Patah", "Spakbor Patah"], actions: ["Las / Ganti Rumah Lock", "Repair Tangga", "Las Spakbor"] },
-    { component: "[09-0] HOIST WINCH (CRANE)", failures: ["Pin Rem Cargo Lepas", "Kawat Boom & Cargo Aus", "Ganti Sling Cargo"], actions: ["Perbaiki Pin Rem Drum Cargo", "Greasing Kawat", "Ganti Sling Cargo"] }
-  ];
 
   // BPB State
   const [isBPBModalOpen, setIsBPBModalOpen] = useState(false);
@@ -443,14 +489,43 @@ const DailyLogActivity = () => {
 
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-6">
           <div className="bg-slate-800 p-3 px-6"><h3 className="text-xs font-bold text-white uppercase tracking-widest flex items-center gap-2"><Wrench size={14} /> Input Activity Details</h3></div>
-          <div className="p-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-            <input list="unified-master" value={mainComp} onChange={(e) => setMainComp(e.target.value)} placeholder="Main Component..." 
-            className="border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"/>
-            <input list="failure-types" value={failType} onChange={(e) => setFailType(e.target.value)} placeholder="Failure Type..." 
-            className="border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
-            <input list="action-types" value={actType} onChange={(e) => setActType(e.target.value)} placeholder="Action Type..." 
-            className="border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+          <div className="p-4 space-y-3">
+            <div className="relative">
+              <input
+                value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search component / failure / action..."
+                className="w-full border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"/>
+              {searchResults.length > 0 && (
+                <div className="absolute z-50 w-full bg-white border border-slate-200 rounded-lg shadow-lg mt-1 max-h-60 overflow-auto">
+                  {searchResults.map((item, index) => (
+                    <div key={index} onClick={() => handleSelectSearch(item)}
+                      className="p-3 hover:bg-blue-50 cursor-pointer border-b last:border-none">
+                      <div className="text-xs font-bold text-blue-700">
+                        {item.component}
+                      </div>
+                      <div className="text-xs text-red-600">
+                        {item.failure}
+                      </div>
+                      <div className="text-xs text-green-600">
+                        {item.action}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <input list="unified-master" value={mainComp} onChange={(e) => setMainComp(e.target.value)} placeholder="Main Component..."
+                className="border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"/>
+
+              <input list="failure-types" value={failType} onChange={(e) => setFailType(e.target.value)} placeholder="Failure Type..."
+                className="border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"/>
+
+              <input list="action-types" value={actType} onChange={(e) => setActType(e.target.value)} placeholder="Action Type..."
+                className="border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"/>
+            </div>
           </div>
+
           <div className="px-4 pb-4 flex justify-end gap-2">{editingId !== null && (
             <button onClick={() => { 
               setEditingId(null); 
