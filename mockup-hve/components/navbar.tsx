@@ -31,15 +31,6 @@ const Navbar = () => {
             TRANSACTION
           </Link>
           <Link 
-            href="#" 
-            className={`text-sm font-semibold pb-1 transition-colors ${
-              isActive('#') 
-                ? 'text-blue-600 border-b-2 border-blue-600' 
-                : 'text-slate-500 hover:text-slate-800 border-b-2 border-transparent'
-            }`}>
-            REPORT
-          </Link>
-          <Link 
             href="/monitoring" 
             className={`text-sm font-semibold pb-1 transition-colors ${
               isActive('/monitoring') 
@@ -47,6 +38,24 @@ const Navbar = () => {
                 : 'text-slate-500 hover:text-slate-800 border-b-2 border-transparent'
             }`}>
             MONITORING & ANALYSIS (SRT)
+          </Link>
+          <Link 
+            href="/oil" 
+            className={`text-sm font-semibold pb-1 transition-colors ${
+              isActive('/oil') 
+                ? 'text-blue-600 border-b-2 border-blue-600' 
+                : 'text-slate-500 hover:text-slate-800 border-b-2 border-transparent'
+            }`}>
+            OIL MONITORING
+          </Link>
+          <Link 
+            href="/fuel" 
+            className={`text-sm font-semibold pb-1 transition-colors ${
+              isActive('/fuel') 
+                ? 'text-blue-600 border-b-2 border-blue-600' 
+                : 'text-slate-500 hover:text-slate-800 border-b-2 border-transparent'
+            }`}>
+            FUEL MONITORING
           </Link>
         </nav>
       </div>
