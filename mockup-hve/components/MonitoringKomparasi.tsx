@@ -22,8 +22,10 @@ const MonitoringKomparasi = () => {
       avail: 85,
       freq: 15,
       downtime: 185,
-      mttr: 5.2,
-      mtbf: 250,
+      mean_mttr: 5.2,
+      median_mttr: 4.5,
+      mean_mtbf: 250,
+      median_mtbf: 220,
       system: "Engine / Cooling"
     },
     "HVE AMB 01": {
@@ -35,8 +37,10 @@ const MonitoringKomparasi = () => {
       avail: 92,
       freq: 8,
       downtime: 120,
-      mttr: 3.8,
-      mtbf: 410,
+      mean_mttr: 3.8,
+      median_mttr: 3.2,
+      mean_mtbf: 410,
+      median_mtbf: 380,
       system: "Hydraulic Hose"
     },
     "HVE JKT 05": {
@@ -68,8 +72,8 @@ const MonitoringKomparasi = () => {
   const getRadarPath = (data: any) => {
     const scores = [
       (data.avail - 50) * 2,           // Top: Availability %
-      (data.mtbf / 500) * 80,          // Top Right: MTBF Score
-      (10 - data.mttr) * 8,            // Bottom Right: MTTR (Inverse: Lower is Better)
+      (data.mean_mtbf / 500) * 80,          // Top Right: MTBF Score
+      (10 - data.mean_mttr) * 8,            // Bottom Right: MTTR (Inverse: Lower is Better)
       (400 - data.downtime) / 5,       // Bottom Left: Downtime (Inverse: Lower is Better)
       (30 - data.freq) * 2.6           // Top Left: Freq (Inverse: Lower is Better)
     ];
@@ -89,8 +93,8 @@ const MonitoringKomparasi = () => {
   const getRadarPoints = (data: any) => {
       const scores = [
         (data.avail - 50) * 2,
-        (data.mtbf / 500) * 80,
-        (10 - data.mttr) * 8,
+        (data.mean_mtbf / 500) * 80,
+        (10 - data.mean_mttr) * 8,
         (400 - data.downtime) / 5,
         (30 - data.freq) * 2.6
       ];
@@ -133,12 +137,20 @@ const MonitoringKomparasi = () => {
               <Filter size={16} className="text-slate-400" /> Filter Unit {p.id}
             </div>
             <div className="space-y-1">
+              <label className="text-[10px] text-green-700">Lokasi:</label>
+              <select className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none font-bold">
+                <option>Pilih Lokasi</option>
+                <option>SBY - SURABAYA</option>
+                <option>JKT - JAKARTA</option>
+                <option>AMB - AMBON</option>
+              </select>
+            </div>
+            <div className="space-y-1">
               <label className="text-[10px] font-bold text-slate-400 uppercase">Pilih Unit Seleksi:</label>
               <select 
                 value={p.state} 
                 onChange={(e) => p.setter(e.target.value)}
-                className="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500"
-              >
+                className="w-full text-xs font-bold bg-slate-50 border border-slate-200 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-blue-500">
                 {Object.keys(unitData).map(key => (
                   <option key={key} value={key}>{key} ({unitData[key].loc?.split(' - ')[0]})</option>
                 ))}
@@ -209,8 +221,8 @@ const MonitoringKomparasi = () => {
                         setTooltip({
                           x: p.x, y: p.y,
                           label: radarLabels[i],
-                          valueA: dataA[["avail","mtbf","mttr","downtime","freq"][i]],
-                          valueB: dataB[["avail","mtbf","mttr","downtime","freq"][i]]
+                          valueA: dataA[["avail","mean_mtbf","mean_mttr","downtime","freq"][i]],
+                          valueB: dataB[["avail","mean_mtbf","mean_mttr","downtime","freq"][i]]
                         })
                       }
                       onMouseLeave={() => setTooltip(null)}
@@ -227,8 +239,8 @@ const MonitoringKomparasi = () => {
                         setTooltip({
                           x: p.x, y: p.y,
                           label: radarLabels[i],
-                          valueA: dataA[["avail","mtbf","mttr","downtime","freq"][i]],
-                          valueB: dataB[["avail","mtbf","mttr","downtime","freq"][i]]
+                          valueA: dataA[["avail","mean_mtbf","mean_mttr","downtime","freq"][i]],
+                          valueB: dataB[["avail","mean_mtbf","mean_mttr","downtime","freq"][i]]
                         })
                       }
                       onMouseLeave={() => setTooltip(null)}
@@ -290,8 +302,44 @@ const MonitoringKomparasi = () => {
                   ].map((kpi) => (
                     <tr key={kpi.key} className="hover:bg-slate-50 transition-colors">
                       <td className="px-4 py-4 text-slate-500">{kpi.label}</td>
-                      <td className={`px-4 py-4 text-center ${isWinner(dataA[kpi.key], dataB[kpi.key], kpi.type as any) ? 'text-green-600 bg-green-50/50' : 'text-slate-800'}`}>{dataA[kpi.key]}{kpi.unit}</td>
-                      <td className={`px-4 py-4 text-center ${isWinner(dataB[kpi.key], dataA[kpi.key], kpi.type as any) ? 'text-green-600 bg-green-50/50' : 'text-slate-800'}`}>{dataB[kpi.key]}{kpi.unit}</td>
+                      <td className={`px-4 py-4 text-center 
+                        ${isWinner(dataA[kpi.key], dataB[kpi.key], kpi.type as any) ? 'text-green-600 bg-green-50/50' : 'text-slate-800'}`}>
+                          {kpi.key === "mttr" || kpi.key === "mtbf" ? (
+                            <div className="flex flex-col leading-tight gap-2">
+                              <span className="font-bold">
+                                Mean: {dataA[`mean_${kpi.key}`]}{kpi.unit}
+                              </span>
+                              <span className="text-slate-400">
+                                Median: {dataA[`median_${kpi.key}`]}{kpi.unit}
+                              </span>
+                            </div>
+                          ) 
+                          : 
+                          (
+                            <span>
+                              {dataA[kpi.key]}{kpi.unit}
+                            </span>
+                          )}
+                      </td>
+                      <td className={`px-4 py-4 text-center 
+                        ${isWinner(dataB[kpi.key], dataA[kpi.key], kpi.type as any) ? 'text-green-600 bg-green-50/50' : 'text-slate-800'}`}>
+                          {kpi.key === "mttr" || kpi.key === "mtbf" ? (
+                            <div className="flex flex-col leading-tight gap-2">
+                              <span className="font-bold">
+                                Mean: {dataB[`mean_${kpi.key}`]}{kpi.unit}
+                              </span>
+                              <span className="text-slate-400">
+                                Median: {dataB[`median_${kpi.key}`]}{kpi.unit}
+                              </span>
+                            </div>
+                          ) 
+                          : 
+                          (
+                            <span>
+                              {dataB[kpi.key]}{kpi.unit}
+                            </span>
+                          )}
+                      </td>
                     </tr>
                   ))}
                   <tr className="bg-red-50/30">

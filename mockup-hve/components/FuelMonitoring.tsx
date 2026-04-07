@@ -1,5 +1,5 @@
 "use client";
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { 
   Fuel, Gauge, TrendingUp, Filter, Search, Download, 
   BarChart3, MapPin, Zap, CheckCircle2, AlertTriangle,
@@ -27,17 +27,47 @@ const FuelMonitoring = () => {
   const fleetData = [
     { id: "HVE-RS-001", type: "Reach Stacker", hmu: 1250, fuel: 8200, loc: "Surabaya" },
     { id: "HVE-RS-004", type: "Reach Stacker", hmu: 1100, fuel: 9500, loc: "Surabaya" },
+    { id: "HVE-RS-002", type: "Reach Stacker", hmu: 1300, fuel: 9600, loc: "Surabaya" },
+    { id: "HVE-RS-003", type: "Reach Stacker", hmu: 1400, fuel: 9200, loc: "Surabaya" },
+    { id: "HVE-RS-005", type: "Reach Stacker", hmu: 1500, fuel: 9300, loc: "Surabaya" },
+    { id: "HVE-RS-006", type: "Reach Stacker", hmu: 1600, fuel: 9400, loc: "Surabaya" },
     { id: "HVE-TR-012", type: "Trailer", hmu: 2400, fuel: 12000, loc: "Jakarta" },
     { id: "HVE-TR-015", type: "Trailer", hmu: 2100, fuel: 10500, loc: "Jakarta" },
   ];
 
   // Mock Data for graphs (Monthly Consumption for the last 6 months)
   const monthlyData = {
-    "HVE-RS-001": [120, 140, 130, 150, 160, 170],
-    "HVE-RS-004": [150, 160, 155, 170, 180, 190],
+    "HVE-RS-001": [20, 40, 30, 50, 60, 70],
+    "HVE-RS-002": [110, 135, 125, 145, 150, 160],
+    "HVE-RS-003": [230, 245, 240, 255, 265, 275],
+    "HVE-RS-004": [350, 360, 355, 370, 380, 390],
+    "HVE-RS-005": [440, 450, 445, 460, 470, 480],
+    "HVE-RS-006": [535, 548, 542, 558, 568, 578],
     "HVE-TR-012": [200, 210, 205, 220, 230, 240],
     "HVE-TR-015": [180, 175, 190, 200, 210, 220],
   };
+
+  const [selectedUnits, setSelectedUnits] = useState<string[]>([]);
+  const [isUserSelection, setIsUserSelection] = useState(false);
+  useEffect(() => {
+    if (selectedType === "All") {
+      setSelectedUnits([]);
+      return;
+    }
+
+    // Only auto-set if user hasn't customized yet
+    if (!isUserSelection) {
+      const units = fleetData
+        .filter(f => f.type === selectedType)
+        .map(f => f.id);
+
+      setSelectedUnits(units.slice(0, 5));
+    }
+  }, [selectedType, isUserSelection]);
+
+  const unitsOfSelectedType = useMemo(() => {
+    return fleetData.filter(f => f.type === selectedType);
+  }, [selectedType]);
 
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN"];
@@ -91,6 +121,23 @@ const FuelMonitoring = () => {
       return group.type === selectedType;
     });
   }, [selectedType, fleetData, monthlyData]);
+
+  const graphData = useMemo(() => {
+    // CASE 1: ALL → use aggregated
+    if (selectedType === "All") {
+      return aggregatedTrendData.map(group => ({
+        label: group.type,
+        data: group.data
+      }));
+    }
+
+    // CASE 2: specific type → use selected units
+    return selectedUnits.map(unitId => ({
+      label: unitId,
+      data: monthlyData[unitId as keyof typeof monthlyData] || []
+    }));
+
+  }, [selectedType, selectedUnits, aggregatedTrendData]);
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 p-8">
@@ -261,19 +308,47 @@ const FuelMonitoring = () => {
               <BarChart3 size={16} className="text-blue-600" /> Consumption Trend Analysis
             </h3>
             <div className="flex gap-4 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
-              {aggregatedTrendData.map((group, i) => (
-                <div key={group.type} className="flex items-center gap-1.5">
+              {graphData.map((group, i) => (
+                <div key={group.label} className="flex items-center gap-1.5">
                   <div 
                     className="w-2 h-2 rounded-full" 
                     style={{ backgroundColor: i === 0 ? "#2563eb" : i === 1 ? "#16a34a" : i === 2 ? "#dc2626" : "#f59e0b" }} 
                   />
-                  <span className="text-[10px] font-black text-slate-600 uppercase">{group.type}</span>
+                  <span className="text-[10px] font-black text-slate-600 uppercase">{group.label}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="h-64 w-full relative pt-4">
+          <div className="h-full w-full relative pt-4">
+
+              {selectedType !== "All" && (
+                <div className="flex gap-2 flex-wrap mb-4">
+                  {unitsOfSelectedType.map(unit => {
+                    const isSelected = selectedUnits.includes(unit.id);
+
+                    return (
+                      <button
+                        key={unit.id}
+                        onClick={() => {
+                          setIsUserSelection(true);
+                          if (isSelected) {
+                            setSelectedUnits(prev => prev.filter(id => id !== unit.id));
+                          } else {
+                            setSelectedUnits(prev => [...prev, unit.id]);
+                          }
+                        }}
+                        className={`px-3 py-1 text-[10px] font-bold rounded-full border transition
+                          ${isSelected
+                            ? "bg-blue-600 text-white border-blue-600"
+                            : "bg-white text-slate-500 border-slate-200 hover:bg-blue-50"}`}>
+                        {unit.id}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+
             <svg className="w-full h-full overflow-visible" viewBox="0 0 1000 200" preserveAspectRatio="none">
               {/* GRID LINES */}
               {[0, 50, 100, 150, 200].map((y, i) => (
@@ -300,7 +375,7 @@ const FuelMonitoring = () => {
               )}
 
               {/* RENDERING LINES AND AREAS */}
-              {aggregatedTrendData.map((group, i) => {
+              {graphData.map((group, i) => {
                 const color = i === 0 ? "#2563eb" : i === 1 ? "#16a34a" : "#dc2626";
                 
                 // Dynamic max for high aggregated values
@@ -317,7 +392,7 @@ const FuelMonitoring = () => {
                 }).join(" ");
 
                 return (
-                  <g key={group.type}>
+                  <g key={group.label}>
                     <path d={pathData} fill="none" stroke={color} strokeWidth="3" strokeLinecap="round" />
                     {hoveredIndex !== null && (
                       <circle 
@@ -349,19 +424,19 @@ const FuelMonitoring = () => {
                 </p>
                 
                 <div className="space-y-1.5">
-                  {aggregatedTrendData.map((group, i) => {
+                  {graphData.map((group, i) => {
                     // 1. Get the specific value for this unit and this month
                     const value = group.data[hoveredIndex!];
                     
-                    // 2. Define the color based on the unit's index (matching your lines)
+                    // 2. Define the color based on the unit's index
                     const color = i === 0 ? "#2563eb" : i === 1 ? "#16a34a" : i === 2 ? "#dc2626" : "#f59e0b";
 
                     return (
-                      <div key={group.type} className="flex justify-between items-center gap-4">
+                      <div key={group.label} className="flex justify-between items-center gap-4">
                         {/* Unit Identifier */}
                         <div className="flex items-center gap-1.5">
                           <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
-                          <span className="text-[10px] font-bold text-slate-600">{group.type}</span>
+                          <span className="text-[10px] font-bold text-slate-600">{group.label}</span>
                         </div>
                         
                         {/* The Value */}

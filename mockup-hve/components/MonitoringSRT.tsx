@@ -14,8 +14,8 @@ const MonitoringSRT = () => {
 
   // --- DUMMY DATA ---
   const initialActiveLogs = [
-    { id: 'SPK-001', type: 'REACH STACKER', name: 'HVE AMB 01 / JATAYU (-)', loc: 'AMBON', system: 'ENGINE | FUEL SYSTEM', failureType: 'OLI BOCOR | OVERHEAT | RPM DROP', actionType: 'GANTI SEAL, CLEAN RADIATOR/COOLER, CLEAN JALUR SOLAR', staff: 'Budi (M), Anto (H)', start: '03-03-2026 08:30', current: 6.0, target: 4.0, status: 'OVERDUE' },
-    { id: 'SPK-002', type: 'FORKLIFT', name: 'HVE JKT 05 / FL TCM', loc: 'JAKARTA', system: 'TRANSMISSION', failureType: 'OVERHAUL | BOX FUSE LONGGAR', actionType: 'OVERHAUL & REPAIR POMPA TRANSMISI, GANTI BOX FUSE BARU', staff: 'Yanto (M), Rian (H)', start: '03-03-2026 14:15', current: 2.5, target: 5.0, status: 'ON TRACK' },
+    { id: 'SPK-001', type: 'REACH STACKER', name: 'HVE AMB 01 / JATAYU (-)', loc: 'AMBON', system: 'ENGINE | FUEL SYSTEM', failureType: 'OLI BOCOR | OVERHEAT | RPM DROP', actionType: 'GANTI SEAL | CLEAN RADIATOR/COOLER | CLEAN JALUR SOLAR', staff: 'Budi (M), Anto (H)', start: '03-03-2026 08:30', current: 6.0, target: 4.0, status: 'OVERDUE' },
+    { id: 'SPK-002', type: 'FORKLIFT', name: 'HVE JKT 05 / FL TCM', loc: 'JAKARTA', system: 'TRANSMISSION', failureType: 'OVERHAUL | BOX FUSE LONGGAR', actionType: 'OVERHAUL & REPAIR POMPA TRANSMISI | GANTI BOX FUSE BARU', staff: 'Yanto (M), Rian (H)', start: '03-03-2026 14:15', current: 2.5, target: 5.0, status: 'ON TRACK' },
     { id: 'SPK-005', type: 'CRANE', name: 'HVE SBY 22 / RS KONE', loc: 'SURABAYA', system: 'DRIVESHAFT', failureType: 'BAUT JOINT DRUM SWING KENDOR', actionType: 'PERBAIKI / GANTI BAUT JOINT & PLAT', staff: 'Slamet (M), Adi (H)', start: '04-03-2026 09:00', current: 1.2, target: 3.0, status: 'ON TRACK' },
   ];
 
@@ -93,13 +93,13 @@ const MonitoringSRT = () => {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       {/* Warning Banner */}
-      <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start gap-3 shadow-sm">
+      {/* <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start gap-3 shadow-sm">
         <AlertTriangle className="text-red-600 shrink-0" size={20} />
         <div>
           <h4 className="text-red-800 font-bold text-sm uppercase tracking-tight">Warning! High Priority Overdue:</h4>
           <p className="text-red-700 text-xs mt-0.5">• [SPK-001] HVE AMB 01 / JATAYU (-) exceeds SRT Target by 2.0h.</p>
         </div>
-      </div>
+      </div> */}
 
       {/* Live Filters */}
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
@@ -200,7 +200,11 @@ const MonitoringSRT = () => {
                       ))}
                     </div>
                   </td>
-                  <td className="px-4 py-4 font-bold text-blue-800">{log.staff}</td>
+                  <td className="px-4 py-4 font-bold text-blue-800">
+                    {log.staff.split(', ').map((staff, i) => (
+                        <div key={i} className="leading-tight border-b border-red-50 last:border-0 pb-1 last:pb-0">{staff.trim()}</div>
+                      ))}
+                    </td>
                   <td className="px-4 py-4 font-mono text-slate-700 bg-slate-50/50">{log.start}</td>
                   <td className="px-4 py-4 text-center bg-red-50/20 font-black text-red-600 text-base leading-none">
                     {log.current.toFixed(1)} <br/><span className="text-[8px] text-slate-400 font-bold uppercase">Target: {log.target}h</span>
@@ -271,8 +275,8 @@ const MonitoringSRT = () => {
       </section>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-10">
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 pb-10">
+        {/* <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Compliance Status</h3>
             <div className="flex gap-4">
@@ -288,7 +292,9 @@ const MonitoringSRT = () => {
                </div>
              ))}
           </div>
-        </div>
+        </div> */}
+
+
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex justify-between items-center mb-6 text-xs font-black uppercase tracking-widest">
             <h3 className="text-slate-400">Equip Performance (Filtered)</h3>
