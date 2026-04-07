@@ -39,20 +39,22 @@ const MonitoringPerforma = () => {
 
   const rootDetails: Record<string, any[]> = {
     Engine: [
-      { sub: "Engine", problem: "Overheat", freq: 12 },
-      { sub: "Hydraulic", problem: "Leak", freq: 9 },
-      { sub: "Transmission", problem: "Slipping", freq: 6 },
+      { sub: "Engine A", problem: "Overheat", freq: 36 },
+      { sub: "Engine B", problem: "Leak", freq: 24 },
+      { sub: "Engine C", problem: "Slipping", freq: 5 },
+      { sub: "Engine D", problem: "Broken", freq: 2 },
+      { sub: "Engine E", problem: "Dirty", freq: 7 },
     ],
     Hydraulic: [
-      { sub: "Pump", problem: "Misuse", freq: 7 },
+      { sub: "Pump", problem: "Misuse", freq: 21 },
     ],
     Electrical: [
-      { sub: "Battery", problem: "Low voltage", freq: 8 },
-      { sub: "Wiring", problem: "Short circuit", freq: 5 },
+      { sub: "Battery", problem: "Low voltage", freq: 13 },
+      { sub: "Wiring", problem: "Short circuit", freq: 8 },
     ],
     Others: [
       { sub: "Weather", problem: "Heavy rain", freq: 3 },
-      { sub: "Terrain", problem: "Rough road", freq: 2 },
+      { sub: "Terrain", problem: "Rough road", freq: 4 },
     ],
   };
 
