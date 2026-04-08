@@ -1,12 +1,12 @@
 "use client";
 import React, { useState, useMemo } from 'react';
 import { 
-  Droplets, ArrowUpRight, ArrowDownRight, Fuel, 
+  Droplets, 
   BarChart3, Calendar, Filter, Database, 
   AlertCircle, TrendingUp, Search, Download
 } from 'lucide-react';
 
-const FuelMonitoring = () => {
+const OilMonitoring = () => {
   const [dateRange, setDateRange] = useState({ start: "2026-03-01", end: "2026-03-30" });
 
   // 1. Specific Oil Types & Inventory Data
@@ -47,26 +47,26 @@ const FuelMonitoring = () => {
   ];
 
 
-  const fuelOutData = [
+  const OilOutData = [
     { date: "10-03-2026", unit: "HVE AMB 01", type: "TELLUS 68", cat: "Oli Service / PM", qty: 45, loc: "Ambon"},
     { date: "09-03-2026", unit: "HVE JKT 05", type: "RIMULA X 15 W 40", cat: "Tambah Oli / Kebocoran", qty: 12, loc: "Jakarta"},
     { date: "08-03-2026", unit: "HVE SBY 14", type: "SHELL SPIRAX S2 G 90", cat: "Oli Project / OH", qty: 80, loc: "Surabaya"}
   ];
 
-  const fuelInData = [
+  const OilInData = [
     { date: "10-03-2026", unit: "HVE AMB 01", type: "TELLUS 68", cat: "Stok Reguler Oli", qty: 60, loc: "Ambon"},
     { date: "09-03-2026", unit: "HVE JKT 05", type: "RIMULA X 15 W 40", cat: "Stok Reguler Oli", qty: 25, loc: "Jakarta"},
     { date: "08-03-2026", unit: "HVE SBY 14", type: "SHELL SPIRAX S2 G 90", cat: "Stok Reguler Oli", qty: 100, loc: "Surabaya"}
   ];
 
   const filteredOut = useMemo(() => {
-    if (selectedLocation === "National") return fuelOutData;
-    return fuelOutData.filter(d => d.loc === selectedLocation);
+    if (selectedLocation === "National") return OilOutData;
+    return OilOutData.filter(d => d.loc === selectedLocation);
   }, [selectedLocation]);
 
   const filteredIn = useMemo(() => {
-    if (selectedLocation === "National") return fuelInData;
-    return fuelInData.filter(d => d.loc === selectedLocation);
+    if (selectedLocation === "National") return OilInData;
+    return OilInData.filter(d => d.loc === selectedLocation);
   }, [selectedLocation]);
 
   return (
@@ -84,11 +84,36 @@ const FuelMonitoring = () => {
           </div>
           
           <div className="flex items-center gap-3 bg-white p-2 rounded-xl shadow-sm border border-slate-200">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 uppercase tracking-tighter text-sm">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold">Filter Lokasi</label>
+                <select className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none">
+                  <option>Semua Lokasi (Nasional)</option>
+                  <option>Surabaya</option>
+                  <option>Jakarta</option>
+                  <option>Ambon</option>
+                  <option>Medan</option>
+                  <option>Balikpapan</option>
+                  <option>Makassar</option>
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold">Filter Jenis Alat</label>
+                <select className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none">
+                  <option>Semua Jenis Alat</option>
+                  <option>Reach Stacker</option>
+                  <option>Crane</option>
+                  <option>Forklift</option>
+                </select>
+              </div>
+            </div>
+
             <div className="flex items-center gap-2 px-3 border-r border-slate-100">
               <Calendar size={16} className="text-slate-400" />
-              <input type="date" onChange={(e) => setDateRange({...dateRange, start: e.target.value})} className="text-[10px] font-bold outline-none" />
+              <input type="date" onChange={(e) => setDateRange({...dateRange, start: e.target.value})} className="text-[10px] font-bold outline-none bg-slate-100 p-2 rounded-lg" />
               <span className="text-slate-300">-</span>
-              <input type="date" onChange={(e) => setDateRange({...dateRange, end: e.target.value})} className="text-[10px] font-bold outline-none" />
+              <input type="date" onChange={(e) => setDateRange({...dateRange, end: e.target.value})} className="text-[10px] font-bold outline-none bg-slate-100 p-2 rounded-lg" />
             </div>
             <button className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors">
               <Filter size={16} />
@@ -96,7 +121,7 @@ const FuelMonitoring = () => {
           </div>
         </div>
 
-        <div className="flex gap-4 overflow-x-auto pb-2">
+        {/* <div className="flex gap-4 overflow-x-auto pb-2">
           {locationSummary.map((loc, i) => (
             <div
               key={i}
@@ -108,22 +133,16 @@ const FuelMonitoring = () => {
               <div className="text-xs font-bold uppercase tracking-wider">
                 {loc.name}
               </div>
-              <div className="mt-2 text-lg font-black px-2 py-0.5 rounded bg-red-50 text-red-600 border border-red-100">
-                {loc.out} <span className="text-[10px]">Liter OUT</span>
-              </div>
-              <div className="text-sm font-bold opacity-80 px-2 py-0.5 rounded bg-green-50 text-green-600 border border-green-100">
-                {loc.in} <span className="text-[15px]">Liter IN</span>
-              </div>
             </div>
           ))}
-        </div>
+        </div> */}
 
         {/* TOP ROW: Current Stock Levels (Horizontal Scrollable Cards) */}
         <div className="grid grid-cols-1 md:grid-cols-4 lg:grid-cols-7 gap-4">
           {oilStock.map((oil, i) => (
             <div key={i} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm min-w-[160px]">
               <div className="flex justify-between items-start mb-3">
-                <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><Fuel size={16} /></div>
+                <div className="p-2 bg-blue-50 rounded-lg text-blue-600"><Droplets size={16} /></div>
                 <span className={`text-[9px] font-black ${oil.trend.startsWith('+') ? 'text-green-500' : 'text-red-500'}`}>
                   {oil.trend}
                 </span>
@@ -228,11 +247,11 @@ const FuelMonitoring = () => {
 
         </div>
 
-        {/* Fuel OUT Log */}
+        {/* Oil OUT Log */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="p-4 px-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
-              <BarChart3 size={16} /> Monthly Fuel Usage Log (OUT)
+              <BarChart3 size={16} /> Monthly Oil Usage Log (OUT)
             </h3>
             <div className="flex gap-2">
               <div className="relative">
@@ -274,11 +293,11 @@ const FuelMonitoring = () => {
           </div>
         </div>
 
-        {/* Fuel IN Log */}
+        {/* Oil IN Log */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="p-4 px-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
             <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
-              <BarChart3 size={16} /> Monthly Fuel IN Log
+              <BarChart3 size={16} /> Monthly Oil IN Log
             </h3>
             <div className="flex gap-2">
               <div className="relative">
@@ -325,4 +344,4 @@ const FuelMonitoring = () => {
   );
 };
 
-export default FuelMonitoring;
+export default OilMonitoring;

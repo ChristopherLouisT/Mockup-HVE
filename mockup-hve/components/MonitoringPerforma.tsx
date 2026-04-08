@@ -2,11 +2,12 @@
 import { useState, useMemo  } from 'react';
 import { 
   Activity, Wrench, Clock, AlertTriangle, 
-  PieChart as PieIcon, Gauge, Info,
-  Download, History, ChevronUp, ChevronDown
+  PieChart as PieIcon, Gauge, Info, BarChart3,
+  TrendingUp, History, ChevronUp, ChevronDown
 } from 'lucide-react';
 
 const MonitoringPerforma = () => {
+  const [hoveredMonth, setHoveredMonth] = useState<number | null>(null);
   const [hoveredRoot, setHoveredRoot] = useState<number | null>(null);
   const totalNDT = 142;
 
@@ -157,167 +158,36 @@ const MonitoringPerforma = () => {
 
     
     <div className="space-y-6 animate-in fade-in duration-500">
-
-      <div className="space-y-6 animate-in fade-in duration-500">
-      {/* Warning Banner */}
-      {/* <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start gap-3 shadow-sm">
-        <AlertTriangle className="text-red-600 shrink-0" size={20} />
-        <div>
-          <h4 className="text-red-800 font-bold text-sm uppercase tracking-tight">Warning! High Priority Overdue:</h4>
-          <p className="text-red-700 text-xs mt-0.5">• [SPK-001] HVE AMB 01 / JATAYU (-) exceeds SRT Target by 2.0h.</p>
-        </div>
-      </div> */}
-
       {/* Parameter Analisis */}
       <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-end gap-4">
         <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 font-bold uppercase tracking-tighter text-sm">
-          <div className="space-y-1"><label className="text-[10px] text-green-700">Port/Lokasi:</label><select className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none font-bold uppercase"><option>ALL (NASIONAL)</option><option>SBY - SURABAYA</option><option>JKT - JAKARTA</option><option>AMB - AMBON</option></select></div>
-          <div className="space-y-1"><label className="text-[10px] text-green-700">Jenis Alat:</label><select className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none font-bold uppercase"><option>ALL JENIS ALAT</option><option>Reach Stacker</option><option>Crane</option><option>Forklift</option></select></div>
-          <div className="space-y-1"><label className="text-[10px] text-green-700">Nama Alat:</label><select className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none font-bold uppercase"><option>SEMUA ALAT</option></select></div>
+          <div className="space-y-1">
+            <label className="text-[10px] text-green-700">Port/Lokasi:</label>
+            <select className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none font-bold uppercase">
+              <option>ALL (NASIONAL)</option>
+              <option>SBY - SURABAYA</option>
+              <option>JKT - JAKARTA</option>
+              <option>AMB - AMBON</option>
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] text-green-700">Jenis Alat:</label>
+            <select className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none font-bold uppercase">
+              <option>ALL JENIS ALAT</option>
+              <option>Reach Stacker</option>
+              <option>Crane</option>
+              <option>Forklift</option>
+            </select>
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] text-green-700">Nama Alat:</label>
+            <select className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none font-bold uppercase">
+              <option>SEMUA ALAT</option>
+            </select>
+          </div>
         </div>
         <button className="bg-black text-white px-8 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md active:scale-95">Terapkan</button>
       </div>
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2 block">Active Downtime</span>
-          <div className="text-4xl font-black text-red-600">{filteredActive.length} <span className="text-xs font-bold text-slate-400">UNIT</span></div>
-        </div>
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2 block">Active Overdue SRT</span>
-          <div className="text-4xl font-black text-orange-500">{filteredActive.filter(l => l.status === 'OVERDUE').length} <span className="text-xs font-bold text-slate-400">KASUS</span></div>
-        </div>
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-2 block">Compliance Rate</span>
-          <div className="text-4xl font-black text-blue-600">66%</div>
-          <div className="w-full bg-slate-100 h-1.5 rounded-full mt-4 overflow-hidden"><div className="bg-blue-600 h-full w-2/3"></div></div>
-        </div>
-      </div>
-
-      {/* Active Downtime Table */}
-      <section className="space-y-3">
-        <div className="flex justify-between items-center">
-          <h2 className="text-red-600 font-black italic flex items-center gap-2 text-sm tracking-tight uppercase">
-            <span className="h-3 w-3 rounded-full bg-red-600 animate-pulse"></span> Active Downtime
-          </h2>
-          <button className="bg-[#005a32] text-white px-3 py-1.5 rounded text-[10px] font-bold shadow-sm uppercase"><Download size={14} className="inline mr-1" /> Export</button>
-        </div>
-        <div className="bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden overflow-x-auto">
-          <table className="w-full text-[10px] border-collapse table-fixed">
-            <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 uppercase tracking-tighter text-left">
-              <tr className="divide-x divide-slate-100">
-                <th onClick={() => requestSort('id')} className="px-2 py-2 cursor-pointer hover:bg-slate-100">NO. SPK</th>
-                <th className="px-2 py-2">EQUIP TYPE</th>
-                <th onClick={() => requestSort('name')} className="px-2 py-2 cursor-pointer hover:bg-slate-100">EQUIP NAME</th>
-                <th className="px-2 py-2 text-center">LOCATION</th>
-                {/* <th className="px-2 py-2">DETAILS</th> */}
-                <th className="px-4 py-4">SYSTEM</th>
-                <th className="px-4 py-4 text-red-600">FAILURE TYPE</th>
-                <th className="px-4 py-4 text-slate-600">ACTION TYPE</th>
-                <th className="px-2 py-2 text-blue-800">MECHANIC & HELPER</th>
-                <th className="px-2 py-2">START TIME (DT)</th>
-                <th onClick={() => requestSort('current')} className="px-2 py-2 text-center bg-red-50/30 cursor-pointer">CURRENT DT (H)</th>
-                <th className="px-2 py-2 text-center">STATUS SRT</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50 font-medium uppercase">
-              {filteredActive.map((log) => (
-                <tr key={log.id} className="hover:bg-slate-50/80 transition-colors divide-x divide-slate-50">
-                  <td className="px-4 py-4 text-blue-600 font-bold underline cursor-pointer">{log.id}</td>
-                  <td className="px-4 py-4 text-slate-600">{log.type}</td>
-                  <td className="px-4 py-4 font-black text-red-600 tracking-tighter">{log.name}</td>
-                  <td className="px-4 py-4 text-center text-slate-400 font-bold">{log.loc}</td>
-                  <td className="px-4 py-4 font-black text-slate-800 text-[10px] leading-tight">
-                    <div className="flex flex-col gap-1">
-                      {log.system.split(', ').map((system, i) => (
-                        <div key={i} className="leading-tight border-b border-slate-100 last:border-0 pb-1 last:pb-0">{system.trim()}</div>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 font-black text-red-600 text-[10px]">
-                    <div className="flex flex-col gap-1">
-                      {log.failureType.split(', ').map((fail, i) => (
-                        <div key={i} className="leading-tight border-b border-red-50 last:border-0 pb-1 last:pb-0">{fail.trim()}</div>
-                      ))}
-                    </div>
-                  </td>
-                  <td className="px-4 py-4 font-medium text-slate-500 italic text-[10px]">
-                    <div className="flex flex-col gap-1">
-                      {log.actionType.split(', ').map((action, i) => (
-                        <div key={i} className="leading-tight border-b border-red-50 last:border-0 pb-1 last:pb-0">{action.trim()}</div>
-                      ))}
-                    </div>
-                  </td>
-                  {/* For Detail if only want 1 col */}
-                  {/* <td className="px-4 py-4 text-[10px] leading-tight">
-                    <div className="space-y-1">
-                      <div>
-                        <span className="font-bold text-slate-700">SYS:</span> {log.system}</div>
-                      <div><span className="font-bold text-red-600">FAIL:</span> {log.failureType}</div>
-                      <div><span className="font-bold text-slate-500">ACT:</span> {log.actionType}</div>
-                    </div>
-                  </td> */}
-                  <td className="px-4 py-4 font-bold text-blue-800">
-                    {log.staff.split(', ').map((staff, i) => (
-                        <div key={i} className="leading-tight border-b border-red-50 last:border-0 pb-1 last:pb-0">{staff.trim()}</div>
-                      ))}
-                  </td>
-                  {/* If want no new line */}
-                  {/* <td className="px-3 py-3 text-[10px] font-bold text-blue-800">
-                    {log.staff.split(', ').slice(0,2).join(', ')}
-                    {log.staff.split(', ').length > 2 && ' +'}
-                  </td> */}
-                  <td className="px-4 py-4 font-mono text-slate-700 bg-slate-50/50">{log.start}</td>
-                  <td className="px-4 py-4 text-center bg-red-50/20 font-black text-red-600 text-base leading-none">
-                    {log.current.toFixed(1)} <br/><span className="text-[8px] text-slate-400 font-bold uppercase">Target: {log.target}h</span>
-                  </td>
-                  <td className="px-4 py-4 text-center"><span className={`px-2 py-1 rounded text-[9px] font-black uppercase shadow-sm animate-flicker ${log.status === 'OVERDUE' ? 'bg-red-600 text-white' : 'bg-green-100 text-green-700 border border-green-200'}`}>{log.status}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 pb-10">
-        {/* <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Compliance Status</h3>
-            <div className="flex gap-4">
-              <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-green-500 rounded-full"></div><span className="text-[9px] font-bold text-slate-500 uppercase">Comply</span></div>
-              <div className="flex items-center gap-1.5"><div className="w-2 h-2 bg-red-500 rounded-full"></div><span className="text-[9px] font-bold text-slate-500 uppercase">Overdue</span></div>
-            </div>
-          </div>
-          <div className="h-[200px] flex items-end gap-12 px-8 border-b border-slate-100">
-             {["SBY", "AMB", "JKT"].map((loc, i) => (
-               <div key={i} className="flex-1 flex flex-col items-center gap-2 group cursor-pointer">
-                  <div className={`w-full ${loc === "AMB" ? 'bg-red-500 h-[150px]' : 'bg-green-500 h-[80px]'} rounded-t-md transition-all hover:opacity-80`}></div>
-                  <span className="text-[10px] font-bold text-slate-400">{loc}</span>
-               </div>
-             ))}
-          </div>
-        </div> */}
-
-
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <div className="flex justify-between items-center mb-6 text-xs font-black uppercase tracking-widest">
-            <h3 className="text-slate-400">Equip Performance (Filtered)</h3>
-            <div className="px-3 py-1 bg-slate-50 rounded text-[9px] text-blue-600 border border-blue-100">Compliance %</div>
-          </div>
-          <div className="space-y-4">
-            {[{ id: 'HVE SBY 14', p: 100 }, { id: 'HVE JKT 05', p: 100 }, { id: 'HVE AMB 01', p: 40 }].map((item, idx) => (
-              <div key={idx} className="flex items-center gap-4">
-                <span className="text-[9px] font-black text-slate-400 w-20">{item.id}</span>
-                <div className="flex-1 bg-slate-50 h-3.5 rounded-full overflow-hidden border border-slate-100"><div className="bg-blue-600 h-full" style={{ width: `${item.p}%` }}></div></div>
-                <span className="text-[10px] font-black text-slate-700 w-8">{item.p}%</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
@@ -344,10 +214,10 @@ const MonitoringPerforma = () => {
       </div>
 
       {/* Analytics Visualization Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2">
         
         {/* Trend Chart (MTTR & Availability) */}
-        {/* <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
           <div className="flex justify-between items-center border-b pb-4 border-slate-50">
             <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
               <TrendingUp size={16} className="text-green-600" /> Trend MTTR & Availability (YTD)
@@ -400,129 +270,10 @@ const MonitoringPerforma = () => {
                 <span>100%</span><span>95%</span><span>90%</span><span>85%</span><span>80%</span>
              </div>
           </div>
-        </div> */}
-
-        {/* Root Cause Distribution */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col col-span-2">
-          <div className="flex justify-between items-center border-b pb-4 border-slate-50 mb-8">
-            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-              <PieIcon size={16} className="text-orange-500" /> Distribusi Problem (Root Cause)
-            </h3>
-            <Info size={14} className="text-slate-300" />
-          </div>
-          
-          <div className="flex items-start justify-between flex-1 gap-6">
-            <div 
-              className="relative w-44 h-44 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-105 duration-500"
-              style={{ background: donutGradient }}>
-               <div className="w-28 h-28 bg-white rounded-full flex flex-col items-center justify-center shadow-inner"></div>
-            </div>
-
-            {/* Legends */}
-            <div className="space-y-4 min-w-[160px]">
-              {rootCauses.map((rc, i) => (
-                <div 
-                  key={i} 
-                  className={`group cursor-pointer relative ${selectedRoot === i ? 'bg-slate-100 p-2 rounded-lg' : ''}`}
-                  onClick={() => setSelectedRoot(i)}
-                  onMouseEnter={() => setHoveredRoot(i)}
-                  onMouseLeave={() => setHoveredRoot(null)}>
-                  {/* Floating Tooltip */}
-                  {hoveredRoot === i && (
-                    <div className="absolute -top-12 left-0 bg-slate-800 text-white px-2 py-1 rounded text-[9px] shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200 border border-slate-600 whitespace-nowrap">
-                      <span className="font-black uppercase">{rc.label}</span>: 
-                      <span className={`text-white ml-1`}>
-                        {Math.round((rc.p / 100) * totalNDT)} Cases
-                      </span>
-                      <div className="absolute -bottom-1 left-3 w-2 h-2 bg-slate-800 rotate-45 border-r border-b border-slate-600"></div>
-                    </div>
-                  )}
-
-                  <div className="flex items-center justify-between mb-1">
-                    <div className="flex items-center gap-2">
-                      <div className={`w-3 h-3 rounded-full ${rc.color} ring-2 ring-white shadow-sm group-hover:scale-110 transition-transform`}></div>
-                      <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter group-hover:text-slate-800 transition-colors">
-                        {rc.label}
-                      </span>
-                    </div>
-                    <span className="text-[10px] font-black text-slate-800">{rc.p}%</span>
-                  </div>
-                  
-                  <div className="w-full bg-slate-50 h-1 rounded-full overflow-hidden">
-                    <div 
-                      className={`${rc.color} h-full transition-all duration-1000 group-hover:brightness-90`} 
-                      style={{ width: `${rc.p}%` }}
-                    ></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <div className="min-w-[220px] bg-slate-50 border border-slate-200 rounded-lg p-3">
-              <h4 className="text-[10px] font-black uppercase text-slate-500 mb-2">
-                Detail Problem
-              </h4>
-
-              {selectedRoot !== null ? (
-                <table className="w-full text-[10px]">
-                  <thead className="text-slate-400 uppercase">
-                    <tr>
-                      <th className="text-left py-1">Sub Area</th>
-                      <th className="text-left py-1">Problem</th>
-                      <th className="text-center py-1">Freq</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-200">
-                    {rootDetails[rootCauses[selectedRoot].label]?.map((item, idx) => (
-                      <tr key={idx} className="hover:bg-white transition">
-                        <td className="py-1 font-bold text-slate-600">{item.sub}</td>
-                        <td className="py-1 text-slate-500">{item.problem}</td>
-                        <td className="py-1 text-center font-black text-slate-800">
-                          {item.freq}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              ) : (
-                <div className="text-[10px] text-slate-400 italic text-center py-6">
-                  Click a category to see details
-                </div>
-              )}
-            </div>
-
-
-          </div>
-        </div>
-
-        {/* Bad Actors Table */}
-        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-          <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b pb-4 border-slate-50 mb-6">
-            <AlertTriangle size={16} className="text-yellow-500" /> Top Bad Actors (Sering Rusak)
-          </h3>
-          <table className="w-full text-left text-[11px] font-bold">
-            <thead className="bg-slate-50 text-slate-400 uppercase font-black tracking-widest border-b border-slate-100">
-              <tr><th className="px-4 py-3 text-center">Rank</th><th className="px-4 py-3">Nama Alat</th><th className="px-4 py-3 text-center">Freq (NDT)</th><th className="px-4 py-3 text-right">TTL DT</th></tr>
-            </thead>
-            <tbody className="divide-y divide-slate-50">
-               <tr className="hover:bg-slate-50 transition-colors text-slate-700">
-                 <td className="px-4 py-4 text-center text-slate-400 font-black">#1</td>
-                 <td className="px-4 py-4 underline decoration-blue-100">HVE SBY 14 (RS KONE)</td>
-                 <td className="px-4 py-4 text-center text-red-600 font-black">15x</td>
-                 <td className="px-4 py-4 text-right text-blue-600 font-black">185 Jam</td>
-               </tr>
-               <tr className="hover:bg-slate-50 transition-colors text-slate-700">
-                 <td className="px-4 py-4 text-center text-slate-400 font-black">#2</td>
-                 <td className="px-4 py-4 underline decoration-blue-100">HVE AMB 01 / JATAYU (-)</td>
-                 <td className="px-4 py-4 text-center text-red-600 font-black">8x</td>
-                 <td className="px-4 py-4 text-right text-blue-600 font-black">120 Jam</td>
-               </tr>
-            </tbody>
-          </table>
         </div>
 
         {/* Perbandingan Availability By Type */}
-        {/* <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6">
           <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b pb-4 border-slate-50">
              <BarChart3 size={16} className="text-blue-500" /> Availability By Equipment Type
           </h3>
@@ -543,9 +294,130 @@ const MonitoringPerforma = () => {
                </div>
              ))}
           </div>
-        </div> */}
-
+        </div>
+        
       </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+          {/* Root Cause Distribution */}
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm flex flex-col col-span-2">
+            <div className="flex justify-between items-center border-b pb-4 border-slate-50 mb-8">
+              <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <PieIcon size={16} className="text-orange-500" /> Distribusi Problem (Root Cause)
+              </h3>
+              <Info size={14} className="text-slate-300" />
+            </div>
+            
+            <div className="flex items-start justify-between flex-1 gap-6">
+              <div 
+                className="relative w-44 h-44 rounded-full shadow-lg flex items-center justify-center transition-transform hover:scale-105 duration-500"
+                style={{ background: donutGradient }}>
+                <div className="w-28 h-28 bg-white rounded-full flex flex-col items-center justify-center shadow-inner"></div>
+              </div>
+
+              {/* Legends */}
+              <div className="space-y-4 min-w-[160px]">
+                {rootCauses.map((rc, i) => (
+                  <div 
+                    key={i} 
+                    className={`group cursor-pointer relative ${selectedRoot === i ? 'bg-slate-100 p-2 rounded-lg' : ''}`}
+                    onClick={() => setSelectedRoot(i)}
+                    onMouseEnter={() => setHoveredRoot(i)}
+                    onMouseLeave={() => setHoveredRoot(null)}>
+                    {/* Floating Tooltip */}
+                    {hoveredRoot === i && (
+                      <div className="absolute -top-12 left-0 bg-slate-800 text-white px-2 py-1 rounded text-[9px] shadow-xl z-50 animate-in fade-in zoom-in-95 duration-200 border border-slate-600 whitespace-nowrap">
+                        <span className="font-black uppercase">{rc.label}</span>: 
+                        <span className={`text-white ml-1`}>
+                          {Math.round((rc.p / 100) * totalNDT)} Cases
+                        </span>
+                        <div className="absolute -bottom-1 left-3 w-2 h-2 bg-slate-800 rotate-45 border-r border-b border-slate-600"></div>
+                      </div>
+                    )}
+
+                    <div className="flex items-center justify-between mb-1">
+                      <div className="flex items-center gap-2">
+                        <div className={`w-3 h-3 rounded-full ${rc.color} ring-2 ring-white shadow-sm group-hover:scale-110 transition-transform`}></div>
+                        <span className="text-[10px] font-black text-slate-500 uppercase tracking-tighter group-hover:text-slate-800 transition-colors">
+                          {rc.label}
+                        </span>
+                      </div>
+                      <span className="text-[10px] font-black text-slate-800">{rc.p}%</span>
+                    </div>
+                    
+                    <div className="w-full bg-slate-50 h-1 rounded-full overflow-hidden">
+                      <div 
+                        className={`${rc.color} h-full transition-all duration-1000 group-hover:brightness-90`} 
+                        style={{ width: `${rc.p}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="min-w-[220px] bg-slate-50 border border-slate-200 rounded-lg p-3">
+                <h4 className="text-[10px] font-black uppercase text-slate-500 mb-2">
+                  Detail Problem
+                </h4>
+
+                {selectedRoot !== null ? (
+                  <table className="w-full text-[10px]">
+                    <thead className="text-slate-400 uppercase">
+                      <tr>
+                        <th className="text-left py-1">Sub Area</th>
+                        <th className="text-left py-1">Problem</th>
+                        <th className="text-center py-1">Freq</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {rootDetails[rootCauses[selectedRoot].label]?.map((item, idx) => (
+                        <tr key={idx} className="hover:bg-white transition">
+                          <td className="py-1 font-bold text-slate-600">{item.sub}</td>
+                          <td className="py-1 text-slate-500">{item.problem}</td>
+                          <td className="py-1 text-center font-black text-slate-800">
+                            {item.freq}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                ) : (
+                  <div className="text-[10px] text-slate-400 italic text-center py-6">
+                    Click a category to see details
+                  </div>
+                )}
+              </div>
+
+
+            </div>
+          </div>
+
+          {/* Bad Actors Table */}
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2 border-b pb-4 border-slate-50 mb-6">
+              <AlertTriangle size={16} className="text-yellow-500" /> Top Bad Actors (Sering Rusak)
+            </h3>
+            <table className="w-full text-left text-[11px] font-bold">
+              <thead className="bg-slate-50 text-slate-400 uppercase font-black tracking-widest border-b border-slate-100">
+                <tr><th className="px-4 py-3 text-center">Rank</th><th className="px-4 py-3">Nama Alat</th><th className="px-4 py-3 text-center">Freq (NDT)</th><th className="px-4 py-3 text-right">TTL DT</th></tr>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                <tr className="hover:bg-slate-50 transition-colors text-slate-700">
+                  <td className="px-4 py-4 text-center text-slate-400 font-black">#1</td>
+                  <td className="px-4 py-4 underline decoration-blue-100">HVE SBY 14 (RS KONE)</td>
+                  <td className="px-4 py-4 text-center text-red-600 font-black">15x</td>
+                  <td className="px-4 py-4 text-right text-blue-600 font-black">185 Jam</td>
+                </tr>
+                <tr className="hover:bg-slate-50 transition-colors text-slate-700">
+                  <td className="px-4 py-4 text-center text-slate-400 font-black">#2</td>
+                  <td className="px-4 py-4 underline decoration-blue-100">HVE AMB 01 / JATAYU (-)</td>
+                  <td className="px-4 py-4 text-center text-red-600 font-black">8x</td>
+                  <td className="px-4 py-4 text-right text-blue-600 font-black">120 Jam</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
 
       {/* Historical Log Table */}
       <section className="space-y-3 pt-6 border-t border-slate-200">

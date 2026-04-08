@@ -1,27 +1,17 @@
 "use client";
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { 
-  Fuel, Gauge, TrendingUp, Filter, Search, Download, 
-  BarChart3, MapPin, Zap, CheckCircle2, AlertTriangle,
-  ArrowRight, Activity
+  TrendingUp, Filter, Search, Fuel,
+  BarChart3, MapPin, CheckCircle2, Activity, Calendar
 } from 'lucide-react';
 
 const FuelMonitoring = () => {
   const [selectedType, setSelectedType] = useState("All");
   const [unitA, setUnitA] = useState("HVE-RS-001");
   const [unitB, setUnitB] = useState("HVE-RS-004");
+  const [dateRange, setDateRange] = useState({ start: "2026-03-01", end: "2026-03-30" });
 
   const [selectedLocation, setSelectedLocation] = useState("National");
-  const locationSummary = [
-    { name: "National", hmu: 12400, fuel: 8600 },
-
-    { name: "Jakarta", hmu: 3200, fuel: 2200 },
-    { name: "Surabaya", hmu: 2600, fuel: 1800 },
-    { name: "Balikpapan", hmu: 1800, fuel: 1300 },
-    { name: "Makassar", hmu: 1600, fuel: 1100 },
-    { name: "Medan", hmu: 1500, fuel: 1050 },
-    { name: "Ambon", hmu: 700, fuel: 550 },
-  ];
 
   // Mock Data for Comparison
   const fleetData = [
@@ -147,46 +137,49 @@ const FuelMonitoring = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-black flex items-center gap-2 text-slate-800 uppercase tracking-tight">
-              <Activity className="text-blue-600" size={28} />
+              <Fuel className="text-blue-600" size={28} />
               Fuel Efficiency Analysis
             </h2>
             <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Compare Performance Metrics</p>
           </div>
           
-          <div className="flex items-center gap-3">
-            <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}
-              className="bg-white border border-slate-200 rounded-xl px-4 py-2 text-xs font-bold outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
-              <option value="All">All Equipment</option>
-              <option value="Reach Stacker">Reach Stacker</option>
-              <option value="Trailer">Trailer</option>
-              <option value="Forklift">Forklift</option>
-            </select>
-            <button className="bg-blue-600 text-white px-5 py-2 rounded-xl text-xs font-black shadow-lg shadow-blue-100 hover:bg-blue-700 transition-all flex items-center gap-2">
-              <Download size={16} /> EXPORT
-            </button>
-          </div>
-        </div>
+          <div className="flex items-center gap-3 bg-white p-2 rounded-xl shadow-sm border border-slate-200">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 uppercase tracking-tighter text-sm">
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold">Filter Lokasi</label>
+                <select className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none">
+                  <option value="All">Semua Lokasi (Nasional)</option>
+                  <option value="Surabaya">Surabaya</option>
+                  <option value="Jakarta">Jakarta</option>
+                  <option value="Ambon">Ambon</option>
+                  <option value="Medan">Medan</option>
+                  <option value="Balikpapan">Balikpapan</option>
+                  <option value="Makassar">Makassar</option>
+                </select>
+              </div>
 
-        <div className="flex gap-4 overflow-x-auto pb-2">
-          {locationSummary.map((loc, i) => (
-            <div
-              key={i}
-              onClick={() => setSelectedLocation(loc.name)}
-              className={`min-w-[180px] cursor-pointer p-4 rounded-xl border shadow-sm transition-all
-                ${selectedLocation === loc.name 
-                  ? "bg-blue-600 text-white border-blue-600" 
-                  : "bg-white border-slate-200 hover:bg-blue-50"}`}>
-              <div className="text-xs font-bold uppercase tracking-wider">
-                {loc.name}
-              </div>
-              <div className="mt-2 text-lg px-2 py-0.5 rounded">
-                {loc.fuel} <span className="text-[10px] font-black">Liter Fuel</span>
-              </div>
-              <div className="text-sm opacity-80 px-2 py-0.5 rounded">
-                {loc.hmu} <span className="text-[15px] font-black">HM</span>
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold">Filter Jenis Alat</label>
+                <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}
+                 className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none">
+                  <option value="All">Semua Jenis Alat</option>
+                  <option value="Reach Stacker">Reach Stacker</option>
+                  <option value="Crane">Crane</option>
+                  <option value="Forklift">Forklift</option>
+                </select>
               </div>
             </div>
-          ))}
+
+            <div className="flex items-center gap-2 px-3 border-r border-slate-100">
+              <Calendar size={16} className="text-slate-400" />
+              <input type="date" onChange={(e) => setDateRange({...dateRange, start: e.target.value})} className="text-[10px] font-bold outline-none bg-slate-100 p-2 rounded-lg" />
+              <span className="text-slate-300">-</span>
+              <input type="date" onChange={(e) => setDateRange({...dateRange, end: e.target.value})} className="text-[10px] font-bold outline-none bg-slate-100 p-2 rounded-lg" />
+            </div>
+            <button className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors">
+              <Filter size={16} />
+            </button>
+          </div>
         </div>
 
         {/* Efficiency KPIs */}

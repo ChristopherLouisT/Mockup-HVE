@@ -12,9 +12,9 @@ const MonitoringPage = () => {
       <div className="bg-[#005a32] shadow-md sticky top-0 z-30 font-bold">
         <div className="max-w-[1600px] mx-auto flex px-6 overflow-x-auto no-scrollbar">
           {[
-            // { id: 1, label: "1. Monitoring SRT (Log Activity)" },
-            { id: 1, label: "1. Monitoring Performa (MTTR & Availability)" },
-            { id: 2, label: "2. Komparasi Unit" }
+            { id: 1, label: "1. Monitoring SRT (Log Activity)" },
+            { id: 2, label: "2. Monitoring Performa (MTTR & Availability)" },
+            { id: 3, label: "3. Komparasi Unit" }
           ].map((tab) => (
             <button 
               key={tab.id} 
@@ -30,9 +30,9 @@ const MonitoringPage = () => {
       </div>
 
       <main className="max-w-[1600px] mx-auto p-4 md:p-6">
-        {/* {activeTab === 1 && <MonitoringSRT />} */}
-        {activeTab === 1 && <MonitoringPerforma />}
-        {activeTab === 2 && <MonitoringKomparasi />}
+        {activeTab === 1 && <MonitoringSRT />}
+        {activeTab === 2 && <MonitoringPerforma />}
+        {activeTab === 3 && <MonitoringKomparasi />}
       </main>
     </div>
   );

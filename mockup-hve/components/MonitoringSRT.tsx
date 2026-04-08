@@ -92,6 +92,7 @@ const MonitoringSRT = () => {
 
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="space-y-6 animate-in fade-in duration-500">
       {/* Warning Banner */}
       {/* <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-start gap-3 shadow-sm">
         <AlertTriangle className="text-red-600 shrink-0" size={20} />
@@ -101,33 +102,14 @@ const MonitoringSRT = () => {
         </div>
       </div> */}
 
-      {/* Live Filters */}
-      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
-        <div className="flex items-center justify-between mb-6 border-b pb-4 border-slate-100 uppercase tracking-tighter font-bold">
-          <div className="flex items-center gap-2"><Filter size={18} className="text-blue-600" /> Filter Analysis</div>
-          <button onClick={() => {setSearchQuery(""); setSelectedPort("ALL PORTS"); setStartDate(""); setEndDate("");}} className="text-[10px] text-blue-600 hover:underline">Reset All Filters</button>
+      {/* Parameter Analisis */}
+      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex items-end gap-4">
+        <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 font-bold uppercase tracking-tighter text-sm">
+          <div className="space-y-1"><label className="text-[10px] text-green-700">Port/Lokasi:</label><select className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none font-bold uppercase"><option>ALL (NASIONAL)</option><option>SBY - SURABAYA</option><option>JKT - JAKARTA</option><option>AMB - AMBON</option></select></div>
+          <div className="space-y-1"><label className="text-[10px] text-green-700">Jenis Alat:</label><select className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none font-bold uppercase"><option>ALL JENIS ALAT</option><option>Reach Stacker</option><option>Crane</option><option>Forklift</option></select></div>
+          <div className="space-y-1"><label className="text-[10px] text-green-700">Nama Alat:</label><select className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none font-bold uppercase"><option>SEMUA ALAT</option></select></div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-          <div className="md:col-span-2 relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-300" size={16} />
-            <input type="text" placeholder="Search Equipment..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full pl-10 pr-4 py-2.5 text-xs border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 bg-slate-50 font-medium" />
-          </div>
-          <select value={selectedPort} onChange={(e) => setSelectedPort(e.target.value)} className="text-xs border border-slate-200 rounded-lg p-2.5 outline-none bg-slate-50 focus:ring-2 focus:ring-blue-500 font-bold text-slate-700">
-            <option value="ALL PORTS">ALL PORTS</option>
-            <option value="SBY - SURABAYA">SURABAYA (SBY)</option>
-            <option value="JKT - JAKARTA">JAKARTA (JKT)</option>
-            <option value="AMB - AMBON">AMBON (AMB)</option>
-          </select>
-          {/* Date Period Filters */}
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 font-bold">
-            <span className="text-[9px] text-slate-400 uppercase tracking-widest">From:</span>
-            <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="bg-transparent text-[10px] outline-none w-full cursor-pointer" />
-          </div>
-          <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-lg px-3 font-bold">
-            <span className="text-[9px] text-slate-400 uppercase tracking-widest">To:</span>
-            <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="bg-transparent text-[10px] outline-none w-full cursor-pointer" />
-          </div>
-        </div>
+        <button className="bg-black text-white px-8 py-2 rounded-lg text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 transition-all shadow-md active:scale-95">Terapkan</button>
       </div>
 
       {/* KPI Cards */}
@@ -156,20 +138,21 @@ const MonitoringSRT = () => {
           <button className="bg-[#005a32] text-white px-3 py-1.5 rounded text-[10px] font-bold shadow-sm uppercase"><Download size={14} className="inline mr-1" /> Export</button>
         </div>
         <div className="bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden overflow-x-auto">
-          <table className="w-full text-[11px] border-collapse min-w-[1400px]">
+          <table className="w-full text-[10px] border-collapse table-fixed">
             <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 uppercase tracking-tighter text-left">
               <tr className="divide-x divide-slate-100">
-                <th onClick={() => requestSort('id')} className="px-4 py-4 cursor-pointer hover:bg-slate-100">NO. SPK<SortIcon field="id" /></th>
-                <th className="px-4 py-4">EQUIP TYPE</th>
-                <th onClick={() => requestSort('name')} className="px-4 py-4 cursor-pointer hover:bg-slate-100">EQUIP NAME <SortIcon field="name" /></th>
-                <th className="px-4 py-4 text-center">LOCATION</th>
+                <th onClick={() => requestSort('id')} className="px-2 py-2 cursor-pointer hover:bg-slate-100">NO. SPK</th>
+                <th className="px-2 py-2">EQUIP TYPE</th>
+                <th onClick={() => requestSort('name')} className="px-2 py-2 cursor-pointer hover:bg-slate-100">EQUIP NAME</th>
+                <th className="px-2 py-2 text-center">LOCATION</th>
+                {/* <th className="px-2 py-2">DETAILS</th> */}
                 <th className="px-4 py-4">SYSTEM</th>
                 <th className="px-4 py-4 text-red-600">FAILURE TYPE</th>
                 <th className="px-4 py-4 text-slate-600">ACTION TYPE</th>
-                <th className="px-4 py-4 text-blue-800">MECHANIC & HELPER</th>
-                <th className="px-4 py-4">START TIME (DT)</th>
-                <th onClick={() => requestSort('current')} className="px-4 py-4 text-center bg-red-50/30 cursor-pointer">CURRENT DT (H) <SortIcon field="current" /></th>
-                <th className="px-4 py-4 text-center">STATUS SRT</th>
+                <th className="px-2 py-2 text-blue-800">MECHANIC & HELPER</th>
+                <th className="px-2 py-2">START TIME (DT)</th>
+                <th onClick={() => requestSort('current')} className="px-2 py-2 text-center bg-red-50/30 cursor-pointer">CURRENT DT (H)</th>
+                <th className="px-2 py-2 text-center">STATUS SRT</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50 font-medium uppercase">
@@ -181,92 +164,49 @@ const MonitoringSRT = () => {
                   <td className="px-4 py-4 text-center text-slate-400 font-bold">{log.loc}</td>
                   <td className="px-4 py-4 font-black text-slate-800 text-[10px] leading-tight">
                     <div className="flex flex-col gap-1">
-                      {log.system.split(' | ').map((system, i) => (
+                      {log.system.split(', ').map((system: string, i: number) => (
                         <div key={i} className="leading-tight border-b border-slate-100 last:border-0 pb-1 last:pb-0">{system.trim()}</div>
                       ))}
                     </div>
                   </td>
                   <td className="px-4 py-4 font-black text-red-600 text-[10px]">
                     <div className="flex flex-col gap-1">
-                      {log.failureType.split(' | ').map((fail, i) => (
+                      {log.failureType.split(', ').map((fail:string, i:number) => (
                         <div key={i} className="leading-tight border-b border-red-50 last:border-0 pb-1 last:pb-0">{fail.trim()}</div>
                       ))}
                     </div>
                   </td>
                   <td className="px-4 py-4 font-medium text-slate-500 italic text-[10px]">
                     <div className="flex flex-col gap-1">
-                      {log.actionType.split(' | ').map((action, i) => (
+                      {log.actionType.split(', ').map((action:string, i:number) => (
                         <div key={i} className="leading-tight border-b border-red-50 last:border-0 pb-1 last:pb-0">{action.trim()}</div>
                       ))}
                     </div>
                   </td>
+                  {/* For Detail if only want 1 col */}
+                  {/* <td className="px-4 py-4 text-[10px] leading-tight">
+                    <div className="space-y-1">
+                      <div>
+                        <span className="font-bold text-slate-700">SYS:</span> {log.system}</div>
+                      <div><span className="font-bold text-red-600">FAIL:</span> {log.failureType}</div>
+                      <div><span className="font-bold text-slate-500">ACT:</span> {log.actionType}</div>
+                    </div>
+                  </td> */}
                   <td className="px-4 py-4 font-bold text-blue-800">
-                    {log.staff.split(', ').map((staff, i) => (
+                    {log.staff.split(', ').map((staff:string, i:number) => (
                         <div key={i} className="leading-tight border-b border-red-50 last:border-0 pb-1 last:pb-0">{staff.trim()}</div>
                       ))}
-                    </td>
+                  </td>
+                  {/* If want no new line */}
+                  {/* <td className="px-3 py-3 text-[10px] font-bold text-blue-800">
+                    {log.staff.split(', ').slice(0,2).join(', ')}
+                    {log.staff.split(', ').length > 2 && ' +'}
+                  </td> */}
                   <td className="px-4 py-4 font-mono text-slate-700 bg-slate-50/50">{log.start}</td>
                   <td className="px-4 py-4 text-center bg-red-50/20 font-black text-red-600 text-base leading-none">
                     {log.current.toFixed(1)} <br/><span className="text-[8px] text-slate-400 font-bold uppercase">Target: {log.target}h</span>
                   </td>
-                  <td className="px-4 py-4 text-center"><span className={`px-2 py-1 rounded text-[9px] font-black uppercase shadow-sm ${log.status === 'OVERDUE' ? 'bg-red-600 text-white' : 'bg-green-100 text-green-700 border border-green-200'}`}>{log.status}</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-
-      {/* Historical Log Table */}
-      <section className="space-y-3 pt-6 border-t border-slate-200">
-        <h2 className="text-blue-700 font-black italic flex items-center gap-2 text-sm tracking-tight uppercase"><History size={18} className="text-blue-600" /> Historical Log</h2>
-        <div className="bg-white rounded-xl border border-slate-200 shadow-lg overflow-hidden overflow-x-auto">
-          <table className="w-full text-[10px] border-collapse min-w-[1600px]">
-            <thead className="bg-slate-50 text-slate-500 font-bold border-b border-slate-200 uppercase tracking-tighter text-left">
-              <tr className="divide-x divide-slate-100">
-                <th rowSpan={2} className="px-2 py-4 text-center">NO. SPK</th>
-                <th rowSpan={2} className="px-2 py-4">EQUIP TYPE</th>
-                <th rowSpan={2} className="px-2 py-4">EQUIP NAME</th>
-                <th rowSpan={2} className="px-2 py-4 text-center">LOCATION</th>
-                <th rowSpan={2} className="px-2 py-4">SYSTEM</th>
-                <th rowSpan={2} className="px-4 py-4 text-red-600">FAILURE TYPE</th>
-                <th rowSpan={2} className="px-4 py-4 text-slate-600">ACTION TYPE</th>
-                <th rowSpan={2} className="px-2 py-4 text-blue-800">MECHANIC & HELPER</th>
-                <th colSpan={2} className="px-2 py-2 text-center bg-blue-50/30 border-b border-blue-100 text-blue-700 tracking-widest text-[9px]">DATETIME LOG</th>
-                <th colSpan={5} className="px-2 py-2 text-center bg-yellow-50/50 border-b border-slate-200 text-yellow-700 tracking-widest text-[9px]">DOWNTIME (HOURS)</th>
-                <th rowSpan={2} className="px-2 py-4 text-center bg-blue-50/50 text-blue-700">Target SRT</th>
-                <th rowSpan={2} className="px-2 py-4 text-center">STATUS SRT</th>
-              </tr>
-              <tr className="divide-x divide-slate-200 text-[8px] uppercase">
-                <th className="bg-blue-50/20 text-blue-600">Start Time</th>
-                <th className="bg-blue-50/20 text-blue-600">End Time</th>
-                <th className="bg-yellow-50/20 text-yellow-600">W/ Labor</th>
-                <th className="bg-yellow-50/20 text-yellow-600">W/ Part</th>
-                <th className="bg-yellow-50/20 text-yellow-600">Repair</th>
-                <th className="bg-yellow-50/20 text-yellow-600">Other</th>
-                <th className="font-black text-red-600 bg-yellow-100/50">Final DT</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-medium">
-              {filteredHistory.map((log) => (
-                <tr key={log.id} className="hover:bg-slate-50 transition-colors divide-x divide-slate-100 uppercase">
-                  <td className="px-2 py-4 text-blue-600 font-black underline text-center">{log.id}</td>
-                  <td className="px-2 py-4 font-black text-slate-800 tracking-tighter">{log.type}</td>
-                  <td className="px-2 py-4 font-black text-slate-800 tracking-tighter">{log.name}</td>
-                  <td className="px-2 py-4 text-center text-slate-400 font-bold">{log.loc}</td>
-                  <td className="px-2 py-4 font-black text-slate-800 tracking-tighter">{log.system}</td>
-                  <td className="px-4 py-4 text-red-600 font-bold">{log.failureType}</td>
-                  <td className="px-4 py-4 text-slate-600 font-bold">{log.actionType}</td>
-                  <td className="px-2 py-4 text-blue-700 font-black text-[9px] leading-tight">{log.staff}</td>
-                  <td className="px-2 py-4 font-mono text-[9px] text-slate-600 bg-blue-50/10">{log.start}</td>
-                  <td className="px-2 py-4 font-mono text-[9px] text-slate-600 bg-blue-50/10">{log.end}</td>
-                  <td className="px-2 py-4 text-center font-bold">{log.labor.toFixed(1)}</td>
-                  <td className="px-2 py-4 text-center font-bold">{log.part.toFixed(1)}</td>
-                  <td className="px-2 py-4 text-center font-bold">{log.repair.toFixed(1)}</td>
-                  <td className="px-2 py-4 text-center font-bold">{log.other.toFixed(1)}</td>
-                  <td className="px-2 py-4 text-center bg-yellow-50/40 font-black text-red-600 text-xs shadow-inner">{log.final.toFixed(1)}</td>
-                  <td className="px-2 py-4 text-center font-black text-blue-600 bg-blue-50/20">{log.target.toFixed(1)}</td>
-                  <td className="px-3 py-4 text-center"><span className={`px-2 py-1 rounded-[4px] font-black uppercase text-[8px] border shadow-sm ${log.status.includes('ACHIEVED') ? 'bg-green-50 text-green-700 border-green-200' : 'bg-red-50 text-red-700 border-red-200'}`}>{log.status}</span></td>
+                  <td className="px-4 py-4 text-center"><span className={`px-2 py-1 rounded text-[9px] font-black uppercase shadow-sm animate-flicker ${log.status === 'OVERDUE' ? 'bg-red-600 text-white' : 'bg-green-100 text-green-700 border border-green-200'}`}>{log.status}</span></td>
                 </tr>
               ))}
             </tbody>
@@ -275,8 +215,8 @@ const MonitoringSRT = () => {
       </section>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-1 gap-6 pb-10">
-        {/* <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pb-1">
+        <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
           <div className="flex justify-between items-center mb-6">
             <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">Compliance Status</h3>
             <div className="flex gap-4">
@@ -292,7 +232,7 @@ const MonitoringSRT = () => {
                </div>
              ))}
           </div>
-        </div> */}
+        </div>
 
 
         <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
@@ -311,6 +251,8 @@ const MonitoringSRT = () => {
           </div>
         </div>
       </div>
+    </div>
+
     </div>
   );
 };
