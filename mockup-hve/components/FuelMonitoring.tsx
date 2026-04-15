@@ -1,9 +1,14 @@
 "use client";
 import { useState, useMemo, useEffect } from 'react';
 import { 
-  TrendingUp, Filter, Search, Fuel,
-  BarChart3, MapPin, CheckCircle2, Activity, Calendar
+  TrendingUp, Search, Fuel,
+  BarChart3, MapPin, CheckCircle2,
 } from 'lucide-react';
+import {
+  ResponsiveContainer, BarChart, Bar,
+  Line, XAxis, YAxis,
+  Tooltip, Legend, CartesianGrid,
+} from "recharts";
 
 const FuelMonitoring = () => {
   const [selectedType, setSelectedType] = useState("All");
@@ -12,6 +17,11 @@ const FuelMonitoring = () => {
   const [dateRange, setDateRange] = useState({ start: "2026-03-01", end: "2026-03-30" });
 
   const [selectedLocation, setSelectedLocation] = useState("National");
+  const [viewMode, setViewMode] = useState("monthly");
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: 'asc' | 'desc';
+  } | null>(null);
 
   // Mock Data for Comparison
   const fleetData = [
@@ -26,7 +36,7 @@ const FuelMonitoring = () => {
   ];
 
   // Mock Data for graphs (Monthly Consumption for the last 6 months)
-  const monthlyData = {
+  const monthEquipData = {
     "HVE-RS-001": [20, 40, 30, 50, 60, 70],
     "HVE-RS-002": [110, 135, 125, 145, 150, 160],
     "HVE-RS-003": [230, 245, 240, 255, 265, 275],
@@ -35,6 +45,60 @@ const FuelMonitoring = () => {
     "HVE-RS-006": [535, 548, 542, 558, 568, 578],
     "HVE-TR-012": [200, 210, 205, 220, 230, 240],
     "HVE-TR-015": [180, 175, 190, 200, 210, 220],
+  };
+
+  const monthlyData = [
+    { period: "Jan", y2025: 120, y2026: 150 },
+    { period: "Feb", y2025: 100, y2026: 130 },
+    { period: "Mar", y2025: 140, y2026: 170 },
+    { period: "Apr", y2025: 90, y2026: 110 },
+    { period: "May", y2025: 160, y2026: 190 },
+    { period: "Jun", y2025: 130, y2026: 160 },
+    { period: "Jul", y2025: 110, y2026: 140 },
+    { period: "Aug", y2025: 150, y2026: 180 },
+    { period: "Sep", y2025: 120, y2026: 150 },
+    { period: "Oct", y2025: 170, y2026: 210 },
+    { period: "Nov", y2025: 140, y2026: 170 },
+    { period: "Dec", y2025: 160, y2026: 200 },
+  ];
+
+  const weeklyData = [
+    { period: "W1", y2025: 30, y2026: 50 },
+    { period: "W2", y2025: 45, y2026: 60 },
+    { period: "W3", y2025: 20, y2026: 40 },
+    { period: "W4", y2025: 35, y2026: 55 },
+    { period: "W5", y2025: 40, y2026: 65 },
+    { period: "W6", y2025: 30, y2026: 50 },
+    { period: "W7", y2025: 45, y2026: 65 },
+    { period: "W8", y2025: 35, y2026: 55 },
+    { period: "W9", y2025: 40, y2026: 60 },
+    { period: "W10", y2025: 30, y2026: 50 },
+  ];
+
+  const addYoY = (data: typeof monthlyData | typeof weeklyData) =>
+    data.map(d => ({
+      ...d,
+      yoy: (((d.y2026 - d.y2025) / d.y2025) * 100).toFixed(1)
+    }));
+
+  const chartData = useMemo(() => {
+    const base = viewMode === "monthly" ? monthlyData : weeklyData;
+    return addYoY(base);
+  }, [viewMode]);
+
+  const CustomTooltip = ({ active, payload, label }) => {
+    if (!active || !payload) return null;
+
+    return (
+      <div className="bg-white p-3 border rounded shadow text-xs">
+        <p className="font-bold">{label}</p>
+        {payload.map((p, i) => (
+          <p key={i}>
+            {p.name}: {p.value}{p.name === "YoY %" ? "%" : " L"}
+          </p>
+        ))}
+      </div>
+    );
   };
 
   const [selectedUnits, setSelectedUnits] = useState<string[]>([]);
@@ -100,7 +164,7 @@ const FuelMonitoring = () => {
       // 2. Sum their monthly data [Jan, Feb, Mar, Apr, May, Jun]
       const summedData = [0, 0, 0, 0, 0, 0].map((_, monthIdx) => {
         return unitsOfType.reduce((sum, unit) => {
-          return sum + (monthlyData[unit.id as keyof typeof monthlyData]?.[monthIdx] || 0);
+          return sum + (monthEquipData[unit.id as keyof typeof monthEquipData]?.[monthIdx] || 0);
         }, 0);
       });
 
@@ -110,7 +174,7 @@ const FuelMonitoring = () => {
       if (selectedType === "All") return true;
       return group.type === selectedType;
     });
-  }, [selectedType, fleetData, monthlyData]);
+  }, [selectedType, fleetData, monthEquipData]);
 
   const graphData = useMemo(() => {
     // CASE 1: ALL → use aggregated
@@ -124,10 +188,43 @@ const FuelMonitoring = () => {
     // CASE 2: specific type → use selected units
     return selectedUnits.map(unitId => ({
       label: unitId,
-      data: monthlyData[unitId as keyof typeof monthlyData] || []
+      data: monthEquipData[unitId as keyof typeof monthEquipData] || []
     }));
 
   }, [selectedType, selectedUnits, aggregatedTrendData]);
+
+  const requestSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'asc';
+
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+
+    setSortConfig({ key, direction });
+  };
+
+  const sortedFleet = useMemo(() => {
+    let sortable = [...filteredFleet];
+
+    if (sortConfig !== null) {
+      sortable.sort((a, b) => {
+        let aValue, bValue;
+
+        if (sortConfig.key === "efficiency") {
+          aValue = parseFloat(getMetrics(a.fuel, a.hmu).lpHm);
+          bValue = parseFloat(getMetrics(b.fuel, b.hmu).lpHm);
+        } else {
+          return 0;
+        }
+
+        if (aValue < bValue) return sortConfig.direction === "asc" ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
+    return sortable;
+  }, [filteredFleet, sortConfig]);
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900 p-8">
@@ -144,7 +241,7 @@ const FuelMonitoring = () => {
           </div>
           
           <div className="flex items-center gap-3 bg-white p-2 rounded-xl shadow-sm border border-slate-200">
-            <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4 uppercase tracking-tighter text-sm">
+            <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4 uppercase tracking-tighter text-sm">
               <div className="space-y-1">
                 <label className="text-[10px] font-bold">Filter Lokasi</label>
                 <select className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none">
@@ -168,9 +265,20 @@ const FuelMonitoring = () => {
                   <option value="Forklift">Forklift</option>
                 </select>
               </div>
+
+              <div className="space-y-1">
+                <label className="text-[10px] font-bold">Filter Nama Alat</label>
+                <select value={selectedType} onChange={(e) => setSelectedType(e.target.value)}
+                 className="w-full text-xs bg-slate-50 border border-slate-200 rounded-lg p-2 outline-none">
+                  <option value="All">Semua Alat</option>
+                  <option value="RS-001">HVE-RS-001</option>
+                  <option value="TR-001">HVE-TR-001</option>
+                  <option value="FL-001">HVE-FL-001</option>
+                </select>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 px-3 border-r border-slate-100">
+            {/* <div className="flex items-center gap-2 px-3 border-r border-slate-100">
               <Calendar size={16} className="text-slate-400" />
               <input type="date" onChange={(e) => setDateRange({...dateRange, start: e.target.value})} className="text-[10px] font-bold outline-none bg-slate-100 p-2 rounded-lg" />
               <span className="text-slate-300">-</span>
@@ -178,12 +286,12 @@ const FuelMonitoring = () => {
             </div>
             <button className="bg-blue-600 text-white p-2 rounded-lg hover:bg-blue-700 transition-colors">
               <Filter size={16} />
-            </button>
+            </button> */}
           </div>
         </div>
 
         {/* Efficiency KPIs */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
             <span className="text-slate-400 text-[10px] font-black uppercase tracking-widest block mb-1">Total Consumption</span>
             <div className="text-3xl font-black text-slate-800">166,420 <span className="text-sm text-slate-400 font-bold">L</span></div>
@@ -203,6 +311,65 @@ const FuelMonitoring = () => {
             <div className="text-3xl font-black text-slate-800">722,850 <span className="text-sm text-slate-400 font-bold">HM</span></div>
             <p className="mt-2 text-[10px] font-bold text-slate-400 uppercase">Across 32 Active Units</p>
           </div>
+        </div> */}
+
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm w-full">
+          
+          {/* Header */}
+          <div className="flex justify-between items-center mb-4">
+            <h3 className="text-xs font-black uppercase text-slate-600 tracking-widest">
+              Fuel Consumption YoY
+            </h3>
+
+            {/* Toggle */}
+            <div className="flex bg-slate-100 rounded-lg p-1 text-[10px] font-bold">
+              <button onClick={() => setViewMode("monthly")}
+                className={`px-3 py-1 rounded ${viewMode === "monthly" ? "bg-white shadow" : ""}`}>
+                Monthly
+              </button>
+              <button onClick={() => setViewMode("weekly")}
+                className={`px-3 py-1 rounded ${viewMode === "weekly" ? "bg-white shadow" : ""}`}>
+                Weekly
+              </button>
+            </div>
+          </div>
+
+          {/* Chart */}
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+
+              <XAxis dataKey="period" />
+              <YAxis yAxisId="left" />
+              <YAxis yAxisId="right" orientation="right" />
+
+              <Tooltip content={<CustomTooltip />} />
+              <Legend />
+
+              <defs>
+                <linearGradient id="bar2025" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#000000" />
+                  <stop offset="100%" stopColor="#66676d" />
+                </linearGradient>
+              </defs>
+
+              {/* BAR 2025 */}
+              <Bar fill='url(#bar2025)' yAxisId="left" dataKey="y2025" name="2025" radius={[2, 2, 0, 0]}/>
+              
+              <defs>
+                <linearGradient id="bar2026" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#68a53d" />
+                  <stop offset="100%" stopColor="#acd38f" />
+                </linearGradient>
+              </defs>
+
+              {/* BAR 2026 */}
+              <Bar fill='url(#bar2026)' yAxisId="left" dataKey="y2026" name="2026" radius={[2, 2, 0, 0]}/>
+
+              {/* LINE YoY */}
+              <Line yAxisId="right" type="monotone" dataKey="yoy" name="YoY %" strokeWidth={2}/>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
 
         {/* COMPARISON UNIT BOXES */}
@@ -459,24 +626,24 @@ const FuelMonitoring = () => {
             <h3 className="text-xs font-black uppercase tracking-widest">Fleet Efficiency Breakdown</h3>
             <div className="relative">
               <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-white/50" />
-              <input type="text" placeholder="Search Unit ID..." className="bg-white/10 border-none rounded-full pl-9 pr-4 py-1.5 text-[10px] text-white placeholder-white/50 outline-none focus:ring-1 focus:ring-white/30" />
+              <input type="text" placeholder="Search Unit ID..." className="bg-white/10 border-none rounded-full pl-9 pr-15 py-2 text-[12px] text-white placeholder-white/50 outline-none focus:ring-1 focus:ring-white/30" />
             </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left text-[11px] border-collapse">
               <thead>
-                <tr className="bg-slate-50 text-slate-500 font-black uppercase border-b border-slate-100">
+                <tr className="bg-slate-200 rounded-lg text-slate-500 font-black uppercase border-b border-slate-100">
                   <th className="px-6 py-4">Equip Name</th>
                   <th className="px-6 py-4">Location</th>
                   <th className="px-6 py-4 text-center">HM Total</th>
                   <th className="px-6 py-4 text-center">Fuel (L)</th>
-                  <th className="px-6 py-4 text-center text-blue-600">Efficiency (L/HM)</th>
-                  <th className="px-6 py-4 text-center">Economy (HM/L)</th>
-                  <th className="px-6 py-4 text-right">Insight</th>
+                  <th onClick={() => requestSort("efficiency")} className="px-6 py-4 cursor-pointer text-center text-blue-600">Efficiency (L/HM)</th>
+                  {/* <th className="px-6 py-4 text-center">Economy (HM/L)</th> */}
+                  <th className="px-6 py-4 text-center">Insight</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50 font-bold uppercase">
-                {filteredFleet.map((unit, i) => {
+                {sortedFleet.map((unit, i) => {
                   if (selectedLocation !== "National" && unit.loc !== selectedLocation) return null;
                   const m = getMetrics(unit.fuel, unit.hmu);
                   const isInefficient = parseFloat(m.lpHm) > 7.0;
@@ -494,8 +661,8 @@ const FuelMonitoring = () => {
                             </div>
                          </div>
                       </td>
-                      <td className="px-6 py-4 text-center text-slate-500">{m.hmPl}</td>
-                      <td className="px-6 py-4 text-right">
+                      {/* <td className="px-6 py-4 text-center text-slate-500">{m.hmPl}</td> */}
+                      <td className="px-6 py-4 text-center">
                         <span className={`px-2 py-0.5 rounded text-[9px] ${isInefficient ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-700 border border-green-100'}`}>
                            {isInefficient ? 'WASTEFUL' : 'EFFICIENT'}
                         </span>

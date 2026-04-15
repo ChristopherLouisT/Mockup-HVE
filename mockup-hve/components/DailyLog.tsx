@@ -16,6 +16,9 @@ const DailyLogActivity = () => {
   const [noLOKB, setNoLOKB] = useState("");
   const [noLOKK, setNoLOKK] = useState("");
 
+  const [isRefurbished, setIsRefurbished] = useState(false);
+  const [partMode, setPartMode] = useState<"install" | "remove">("install");
+
   // Master Data From EXCEL
   const masterStandardData = [
     { component: "[0-0] SCHEDULED MAINT. (PM)", failures: ["Unit Kotor", "General Check", "Greasing Berkala", "Preventive Maintenance"], actions: ["Cuci Unit", "General Check", "Greasing Komponen", "Preventive Maintenance"] },
@@ -78,6 +81,8 @@ const DailyLogActivity = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState<any[]>([]);
 
+  const [workType, setWorkType] = useState("");
+
   const flattenedData = useMemo(() => {
     const result: any[] = [];
 
@@ -122,13 +127,13 @@ const DailyLogActivity = () => {
 
   // Auto-fill Mapping
   const equipRegistry: any = {
-    "Reach Stacker": { spk: "SPK-RS-2026-001", lokb: "LOKB-A1", lokk: "LOKK-X9" },
-    "Trailer": { spk: "SPK-TR-2026-042", lokb: "LOKB-B2", lokk: "LOKK-Y8" },
-    "Forklift": { spk: "SPK-FL-2026-015", lokb: "LOKB-C3", lokk: "LOKK-Z7" },
-    "Kereta Tempel": { spk: "SPK-KT-2026-088", lokb: "LOKB-D4", lokk: "LOKK-W6" },
-    "Side Loader": { spk: "SPK-SL-2026-112", lokb: "LOKB-E5", lokk: "LOKK-V5" },
-    "Top Loader": { spk: "SPK-TL-2026-003", lokb: "LOKB-F6", lokk: "LOKK-U4" },
-    "Tronton": { spk: "SPK-TN-2026-221", lokb: "LOKB-G7", lokk: "LOKK-T3" }
+    "Reach Stacker": {},
+    "Trailer": {},
+    "Forklift": {},
+    "Kereta Tempel": {},
+    "Side Loader": {},
+    "Top Loader": {},
+    "Tronton": {}
   };
 
   const handleEquipChange = (name: string) => {
@@ -136,12 +141,8 @@ const DailyLogActivity = () => {
     if (equipRegistry[name]) {
       generateRandomReports();
       setNoSPK(`SPK-${new Date().getFullYear()}-${Math.floor(Math.random() * 999).toString().padStart(3,'0')}`);
-      setNoLOKB(equipRegistry[name].lokb);
-      setNoLOKK(equipRegistry[name].lokk);
     } else {
       setNoSPK("");
-      setNoLOKB(""); 
-      setNoLOKK("");
     }
   };
 
@@ -170,22 +171,37 @@ const DailyLogActivity = () => {
   const [bpbSelections, setBpbSelections] = useState<any[]>([]);
   const [lockedRows, setLockedRows] = useState<number[]>([]);
   const [generatedBPB, setGeneratedBPB] = useState<string | null>(null);
+  const [bpbList, setBpbList] = useState<any[]>([
+    {
+      noBPB: "BPB/123456/HVE/01/25",
+      part: "HYDRAULIC PUMP",
+      qty: 2,
+      activity: "HOIST WINCH - Pin Rem Cargo Lepas",
+      target: "LOKB-2026-001",
+      spk: "SPK-2026-101"
+    }
+  ]);
 
   // BPB Generate Logic
   const generateBPBPreview = () => {
     const rows:any[] = [];
 
     activities.forEach((act, actIndex) => {
-      act.spareParts.forEach((part:any, partIndex:number) => {
-        rows.push({
-          activityIndex: actIndex,
-          partIndex: partIndex,
-          name: part.name,
-          qty: part.qty,
-          keterangan: `${noSPK} | ${act.subSystem} | ${act.failure}`,
-          checked: false,
-          inBPB: part.inBPB || false
-        });
+      act.installedParts.forEach((part:any, partIndex:number) => {
+
+        if (part.needPurchase && !part.inBPB) {
+          rows.push({
+            activityIndex: actIndex,
+            partIndex: partIndex,
+            name: part.name,
+            qty: Math.max(0, part.qty - part.stock),
+            shortage: Math.max(0, part.qty - part.stock), 
+            keterangan: `${noSPK} | ${act.subSystem} | ${act.failure}`,
+            checked: true, // auto checked
+            inBPB: false
+          });
+        }
+
       });
     });
 
@@ -210,19 +226,35 @@ const DailyLogActivity = () => {
     }
 
     const updatedActivities = [...activities];
+    const bpbNumber = `BPB/${Math.floor(Math.random()*999999)}/HVE/01/25`;
+    const newEntries:any[] = [];
+
     checked.forEach(row => {
+      const act = updatedActivities[row.activityIndex];
       updatedActivities[row.activityIndex]
-        .spareParts[row.partIndex]
+        .installedParts[row.partIndex]
         .inBPB = true;
+
+      let target = "-";
+      if (act.docNumber?.startsWith("LOKB")) target = act.docNumber;
+      else if (act.docNumber?.startsWith("LOKK")) target = act.docNumber;
+      else target = "SELF";
+
+      newEntries.push({
+        noBPB: bpbNumber,
+        part: row.name,
+        qty: row.qty,
+        activity: `${act.subSystem} - ${act.failure}`,
+        target: target,
+        spk: `SPK-${new Date().getFullYear()}-${Math.floor(Math.random() * 999).toString().padStart(3,'0')}`
+      });
     });
 
     setActivities(updatedActivities);
 
     const locked = checked.map(r => r.activityIndex);
     setLockedRows(prev => [...new Set([...prev, ...locked])]);
-    
-    const bpbNumber = `BPB/${Math.floor(Math.random()*999999)}/HVE/01/25`;
-
+    setBpbList(prev => [...prev, ...newEntries]);
     setGeneratedBPB(bpbNumber);
     setIsBPBModalOpen(false);
   };
@@ -239,9 +271,12 @@ const DailyLogActivity = () => {
 
   // Spare Part Logic
   const sparePartsList = [
-    { name: "228C0-80012 CYLINDER ASSY LIFT", stock: 12 }, 
-    { name: "91B40-20021 HYDRAULIC PUMP", stock: 5 }, 
-    { name: "01111-54210 ENGINE MOUNTING", stock: 500 }
+    { code: "228C0-80012", name: "CYLINDER ASSY LIFT", stock: 12 },
+    { code: "[RFB] 228C0-80012", name: "[RFB]CYLINDER ASSY LIFT", stock: 12 },
+    { code: "91B40-20021", name: " HYDRAULIC PUMP", stock: 5 },
+    { code: "[RFB] 91B40-20021", name: "[RFB]HYDRAULIC PUMP", stock: 5 },
+    { code: "8302F-83CX7", name: "A PART", stock: 0 },
+    { code: "01111-54210", name: "ENGINE MOUNTING", stock: 500 }
   ];
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showQtySelection, setShowQtySelection] = useState(false);
@@ -266,13 +301,34 @@ const DailyLogActivity = () => {
     else setHelpers(helpers.filter((_, i) => i !== index));
   };
 
+  const generateDocNumber = (type: string) => {
+    const random = Math.floor(Math.random() * 999)
+      .toString()
+      .padStart(3, "0");
+
+    if (type === "other_dept") {
+      return `LOKB-${new Date().getFullYear()}-${random}`;
+    }
+
+    if (type === "vendor") {
+      return `LOKK-${new Date().getFullYear()}-${random}`;
+    }
+
+    return ""; // self → kosong
+  };
+
   const handleAddActivity = () => {
-    if (!mainComp || !failType) return;
+    if (!mainComp || !failType || !actType || !workType) return;
 
     const systemMatch = mainComp.match(/\(([^)]+)\)/);
     const systemStr = systemMatch ? systemMatch[1] : "";
     const subSystemStr = mainComp.replace(/\s*\([^)]+\)/, "").trim();
-    const newActivity = { system: systemStr, subSystem: subSystemStr, failure: failType, action: actType, spareParts: [] };
+    const docNumber = generateDocNumber(workType);
+
+    const newActivity = { 
+      system: systemStr, subSystem: subSystemStr, 
+      failure: failType, action: actType, 
+      docNumber: docNumber, installedParts: [], removedParts: [] };
 
     if (editingId !== null) {
        const updated = [...activities]; 
@@ -286,6 +342,7 @@ const DailyLogActivity = () => {
     setMainComp(""); 
     setFailType(""); 
     setActType("");
+    setWorkType("");
   };
 
   const handleEdit = (index: number) => {
@@ -306,17 +363,43 @@ const DailyLogActivity = () => {
   const finalizePartAddition = () => {
     if (targetActivityIndex !== null) { 
       const updated = [...activities]; 
-      updated[targetActivityIndex].spareParts.push({ 
+
+      const needPurchase = qtyValue > currentMaxStock || currentMaxStock === 0;
+        
+      updated[targetActivityIndex].installedParts.push({ 
         name: tempSelectedPart, 
         qty: qtyValue, 
-        inPBB: false 
+        stock: currentMaxStock,
+        needPurchase: needPurchase,
+        inBPB: false 
       }); 
 
       setActivities(updated); 
       setIsModalOpen(false); 
       setShowQtySelection(false); 
       setTargetActivityIndex(null); 
+      setIsRefurbished(false);
     }
+  };
+
+  const finalizeRemovePart = () => {
+    if (targetActivityIndex === null || !tempSelectedPart || !workType) return;
+
+    const updated = [...activities];
+
+    updated[targetActivityIndex].removedParts.push({
+      name: tempSelectedPart,
+      qty: qtyValue,
+      condition: workType
+    });
+
+    setActivities(updated);
+
+    // reset
+    setIsModalOpen(false);
+    setTempSelectedPart("");
+    setQtyValue(1);
+    setWorkType("");
   };
 
   return (
@@ -407,7 +490,7 @@ const DailyLogActivity = () => {
                   )}
                 </div>
               </div>
-
+{/* 
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-tight">No. LOKB</label>
                 <input disabled value={noLOKB} className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-700" placeholder="Select Equipment & Location First..."/>
@@ -416,7 +499,7 @@ const DailyLogActivity = () => {
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-tight">No. LOKK</label>
                 <input disabled value={noLOKK} className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-700" placeholder="Select Equipment & Location First..."/>
-              </div>
+              </div> */}
             </div>
 
             <div className="space-y-4">
@@ -546,30 +629,47 @@ const DailyLogActivity = () => {
                 className="border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"/>
             </div>
           </div>
+          
+          <div className='grid grid-cols-4 ml-4 gap-2 '>
+            <div className='flex'>
+              <input required type="radio" name='workType' id='self' value="self" checked={workType === "self"} onChange={(e) => setWorkType(e.target.value)}></input>
+              <label htmlFor='self' className="text-xs font-bold text-slate-500 uppercase tracking-tight ml-2 flex items-center gap-1">Dikerjakan Sendiri</label>
+            </div>
+ 
+            <div className='flex'>
+              <input required type="radio" name='workType' value="other_dept"  id='other_dept' checked={workType === "other_dept"} onChange={(e) => setWorkType(e.target.value)}></input>
+              <label htmlFor='other_dept' className="text-xs font-bold text-slate-500 uppercase tracking-tight ml-2 flex items-center gap-1">Dikerjakan oleh Departemen Lain</label>
+            </div>
 
-          <div className="px-4 pb-4 flex justify-end gap-2">{editingId !== null && (
-            <button onClick={() => { 
-              setEditingId(null); 
-              setMainComp(""); 
-              setFailType(""); 
-              setActType(""); 
-            }} 
-            className="bg-slate-500 hover:bg-slate-600 text-white px-6 py-2 rounded-lg text-sm font-bold flex items-center gap-2"><RotateCcw size={18} /> CANCEL</button>)}
-            <button onClick={handleAddActivity} className={`${editingId !== null ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-600 hover:bg-green-700'} text-white px-6 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors`}>
-              {editingId !== null ? <Save size={18} /> : <Plus size={18} />}{editingId !== null ? 'UPDATE ACTIVITY' : 'ADD ACTIVITY'}
-            </button>
-          </div>
+            <div className='flex'>
+              <input required type="radio" name='workType' value="vendor" id='vendor' checked={workType === "vendor"} onChange={(e) => setWorkType(e.target.value)}></input>
+              <label htmlFor='vendor' className="text-xs font-bold text-slate-500 uppercase tracking-tight ml-2 flex items-center gap-1">Dikerjakan oleh Vendor</label>
+            </div>
+
+            <div className="px-4 pb-4 flex justify-end gap-2">{editingId !== null && (
+              <button onClick={() => {setEditingId(null); setMainComp(""); setFailType(""); setActType("");}} 
+                className="bg-slate-500 hover:bg-slate-600 text-white px-6 py-2 rounded-lg text-sm font-bold flex items-center gap-2"><RotateCcw size={18} /> CANCEL</button>)}
+              <button onClick={handleAddActivity} className={`${editingId !== null ? 'bg-orange-500 hover:bg-orange-600' : 'bg-green-600 hover:bg-green-700'} text-white px-6 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors`}>
+                {editingId !== null ? <Save size={18} /> : <Plus size={18} />}{editingId !== null ? 'UPDATE ACTIVITY' : 'ADD ACTIVITY'}
+              </button>
+            </div>
+          </div>  
+
+          
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
               <thead className="bg-[#005a32] text-white font-bold border-y border-slate-200 tracking-tighter">
                 <tr>
-                  <th className="px-6 py-3 uppercase">System</th>
+                  <th className="px-2 py-3 uppercase">System</th>
                   <th className="px-6 py-3 uppercase">Sub-system</th>
                   <th className="px-6 py-3 uppercase">Failure Type</th>
                   <th className="px-6 py-3 uppercase">Action Type</th>
-                  <th className="px-6 py-3 uppercase">Spare Parts</th>
-                  <th className="px-6 py-3 text-center uppercase">Qty</th>
-                  <th className="px-6 py-3 text-right uppercase">Action</th>
+                  <th className="px-6 py-3 uppercase">No. Docs</th>
+                  <th className="px-6 py-3 uppercase">Installed Parts</th>
+                  <th className="px-6 py-3 uppercase">Removed Parts</th>
+                  {/* <th className="px-6 py-3 text-center uppercase">Qty</th> */}
+                  <th className="px-4 py-3 text-center uppercase">Parts Action</th>
+                  <th className="px-2 py-3 text-center uppercase">Action</th>
                 </tr>
               </thead>
             <tbody className="font-bold uppercase">{activities.length === 0 ? 
@@ -578,36 +678,121 @@ const DailyLogActivity = () => {
               <td colSpan={7} className="px-6 py-12 text-center text-slate-400 italic">Belum ada data aktivitas</td>
             </tr>) : (activities.map((act, index) => (
               <tr key={index} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                <td className="px-6 py-4 text-blue-800">{act.system}</td>
+                <td className="px-2 py-4 text-blue-800">{act.system}</td>
                 <td className="px-6 py-4">{act.subSystem}</td>
                 <td className="px-6 py-4 text-red-700">{act.failure}</td>
                 <td className="px-6 py-4 text-green-700">{act.action}</td>
+                <td className="px-6 py-4">{act.docNumber}</td>
                 <td className="px-6 py-4">
                   <div className="flex flex-col gap-1">
-                    {act.spareParts.map((p: any, i: number) => (<span key={i} className="text-[10px] bg-slate-50 px-2 py-0.5 rounded border border-slate-100">{p.name}</span>))}
+                    {act.installedParts.map((p: any, i: number) => (
+                      <span key={i} className="text-[10px] bg-slate-50 px-2 py-0.5 rounded border border-slate-100">
+                      {p.name} x{p.qty}
+                      {p.needPurchase && (
+                        <span className="ml-2 text-red-600 font-bold">
+                          (AJUKAN)
+                        </span>
+                      )}
+                      </span>))}
                   </div>
                 </td>
-                <td className="px-6 py-4 text-center">
+                <td className="px-6 py-4">
+                  {act.removedParts.map((p: any, i: number) => (
+                    <div key={i} className="text-[10px] text-orange-600">
+                      {p.name} x{p.qty} ({p.condition})
+                    </div>
+                  ))}
+                </td>
+                {/* <td className="px-6 py-4 text-center">
                   <div className="flex flex-col gap-1">
                     {act.spareParts.map((p: any, i: number) => (<span key={i} className="text-[10px] font-black text-blue-600 px-2 py-0.5">x{p.qty}</span>))}
                   </div>
+                </td> */}
+                <td className="px-4 py-4 text-right">
+                  <div className="flex flex-col gap-1">
+                      <button onClick={() => { setPartMode("install"); setTargetActivityIndex(index); setIsModalOpen(true); }}
+                        className="bg-blue-600 text-white px-3 py-1 w-20 rounded text-[10px]">
+                        + INSTALL
+                      </button>
+
+                      <button onClick={() => { 
+                        setPartMode("remove"); setTargetActivityIndex(index); setIsModalOpen(true); 
+                        setTempSelectedPart(""); setQtyValue(1); setWorkType("");}}
+                        className="bg-orange-500 text-white px-3 py-1 w-20 rounded text-[10px]">
+                        + REMOVE
+                      </button>
+                    </div>
                 </td>
-                <td className="px-6 py-4 text-right">
+                <td className="px-2 py-4 text-right">
                   <div className="flex flex-col gap-1 items-end">
                     <button disabled={lockedRows.includes(index)} onClick={() => handleEdit(index)} 
-                      className={`px-3 py-1 rounded text-[10px] w-20 ${lockedRows.includes(index) ? "bg-gray-300 cursor-not-allowed" : "bg-orange-500 text-white"}`}>
+                      className={`px-3 py-1 rounded text-[10px] w-20 ${lockedRows.includes(index) ? "bg-gray-300 cursor-not-allowed" : "bg-green-500 text-white"}`}>
                         EDIT
                     </button>
-                    <button onClick={() => { setTargetActivityIndex(index); setIsModalOpen(true); }} className="bg-blue-600 text-white px-3 py-1 rounded text-[10px] w-20">+ PART</button>
+
                     <button disabled={lockedRows.includes(index)} onClick={() => setActivities(activities.filter((_, i) => i !== index))}
                       className={`px-3 py-1 rounded text-[10px] w-20 ${lockedRows.includes(index) ? "bg-gray-300 cursor-not-allowed" : "bg-red-600 text-white"}`}>
-                      DEL
+                      DELETE
                     </button>
                   </div>
                 </td>
               </tr>)))}
             </tbody>
           </table>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-sm border border-slate-200 mt-8 overflow-hidden">
+          <div className="bg-[#005a32] p-3 px-6">
+            <h3 className="text-xs font-bold text-white uppercase tracking-widest">
+              BPB LIST
+            </h3>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm border-collapse">
+              <thead className="bg-slate-100 text-slate-600 font-bold">
+                <tr>
+                  <th className="px-4 py-3">No BPB</th>
+                  <th className="px-4 py-3">Part</th>
+                  <th className="px-4 py-3">Qty</th>
+                  <th className="px-4 py-3">Activity</th>
+                  <th className="px-4 py-3">Target</th>
+                  <th className="px-4 py-3">SPK</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                {bpbList.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-6 text-slate-400 italic">
+                      No BPB data yet
+                    </td>
+                  </tr>
+                ) : (
+                  bpbList.map((item, index) => (
+                    <tr key={index} className="border-b hover:bg-slate-50">
+                      <td className="px-4 py-3 font-mono text-blue-700">{item.noBPB}</td>
+                      <td className="px-4 py-3">{item.part}</td>
+                      <td className="px-4 py-3 font-bold">{item.qty}</td>
+                      <td className="px-4 py-3 text-xs">{item.activity}</td>
+                      <td className="px-4 py-3">
+                        <span className={`px-2 py-1 rounded text-xs font-bold
+                          ${item.target === "SELF"
+                            ? "bg-gray-100 text-gray-600"
+                            : item.target.startsWith("LOKB")
+                            ? "bg-blue-100 text-blue-700"
+                            : "bg-orange-100 text-orange-700"
+                          }`}>
+                          {item.target}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-green-700 font-mono">{item.spk}</td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -666,57 +851,97 @@ const DailyLogActivity = () => {
       {isModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-2xl w-full max-w-xl overflow-hidden border border-slate-200">
-            {!showQtySelection ? (
-              <><div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white">
-                  <h2 className="text-blue-700 font-bold uppercase tracking-tight flex items-center gap-2"><Search size={18} /> Item Search</h2>
-                  <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors"><X size={20} /></button>
+            {partMode === "install" ? (
+              !showQtySelection ? (
+                <><div className="p-4 border-b border-slate-100 flex justify-between items-center bg-white">
+                    <h2 className="text-blue-700 font-bold uppercase tracking-tight flex items-center gap-2"><Search size={18} /> Item Search</h2>
+                    <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-red-500 transition-colors"><X size={20} /></button>
+                  </div>
+                  <div className="bg-[#005a32] text-white p-3 font-bold text-xs uppercase flex justify-between">
+                    <span className="w-2/5">Kode Barang</span>
+                    <span className="w-2/5 text-left">Nama Barang</span>
+                    <span className="w-1/5 text-center">Stock</span>
+                    <span className="w-1/5 text-center">Action</span>
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">{sparePartsList.map((item, idx) => (
+                    <div key={idx} className="p-4 flex justify-between items-center border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                      <span className="text-sm font-medium text-slate-700 w-2/5">{item.code}</span>
+                      <span className="text-sm font-medium text-slate-700 w-2/5">{item.name}</span>
+                      <span className={`text-xs font-black w-1/5 text-center ${item.stock < 10 ? 'text-red-600' : 'text-slate-500'}`}>{item.stock}</span>
+                      <div className="w-1/5 text-right">
+                        <button onClick={() => initiateQtySelection(item)} className="bg-[#005a32] hover:bg-green-800 text-white px-4 py-1.5 rounded text-[10px] font-bold uppercase tracking-tighter shadow-sm">SELECT</button>
+                      </div>
+                    </div>))}
+                  </div></>
+              ) : (
+                <div className="p-8 text-center space-y-6">
+                  <div className="mx-auto w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center shadow-inner">
+                    <Package size={32} />
+                  </div>
+
+                  <div className="space-y-1">
+                    <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Set Quantity</h3>
+                    <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">{tempSelectedPart}</p>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-center gap-6">
+                      <button onClick={() => setQtyValue(Math.max(1, qtyValue - 1))} className="p-3 bg-slate-100 rounded-xl hover:bg-slate-200 active:scale-90 transition-all text-slate-600 shadow-sm">
+                        <Minus size={24} strokeWidth={3}/>
+                      </button>
+                      <div className="flex flex-col items-center">
+                        <input type="number" value={qtyValue} onChange={(e) => { const val = parseInt(e.target.value) || 1; setQtyValue(val); }} className="w-24 text-center text-3xl font-black text-blue-600 outline-none bg-transparent" />
+                        <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Limit: {qtyValue} / 
+                          <span className="text-blue-500">{currentMaxStock}</span>
+                        </span>
+                      </div>
+                      <button onClick={() => setQtyValue(qtyValue + 1)} className={`p-3 rounded-xl transition-all shadow-sm bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-90`}>
+                        <Plus size={24} strokeWidth={3}/>
+                      </button>
+                    </div>{qtyValue >= currentMaxStock && (<p className="text-[9px] text-red-500 font-bold uppercase flex items-center justify-center gap-1"><AlertCircle size={10} /> Maximum stock reached</p>)}
+                    {/* <div className="flex items-center justify-center gap-2 mt-5">
+                      <input type="checkbox" id="refurbished" checked={isRefurbished} onChange={(e) => setIsRefurbished(e.target.checked)} className='form-checkbox h-5 w-5 text-blue-600'/>
+                      <label htmlFor="refurbished" className="text-lg font-medium text-slate-700">Refurbished</label>
+                    </div> */}
+                  </div>
+
+                  <div className="flex gap-3 pt-4">
+                    <button onClick={() => setShowQtySelection(false)} className="flex-1 px-6 py-3 rounded-xl text-xs font-black bg-slate-100 text-slate-500 uppercase hover:bg-slate-200 flex items-center justify-center gap-2"><ChevronLeft size={16}/> Back</button>
+                    <button onClick={finalizePartAddition} className="flex-1 px-6 py-3 rounded-xl text-xs font-black bg-blue-600 text-white uppercase hover:bg-blue-700 shadow-lg shadow-blue-200 flex items-center justify-center gap-2"><Save size={16}/> Add Part</button>
+                  </div>
                 </div>
-                <div className="bg-[#005a32] text-white p-3 font-bold text-xs uppercase flex justify-between">
-                  <span className="w-2/3">Nama Barang</span>
-                  <span className="w-1/6 text-center">Stock</span>
-                  <span className="w-1/6 text-right">Action</span>
-                </div>
-                <div className="max-h-96 overflow-y-auto">{sparePartsList.map((item, idx) => (
-                  <div key={idx} className="p-4 flex justify-between items-center border-b border-slate-50 hover:bg-slate-50 transition-colors">
-                    <span className="text-sm font-medium text-slate-700 w-2/3">{item.name}</span>
-                    <span className={`text-xs font-black w-1/6 text-center ${item.stock < 10 ? 'text-red-600' : 'text-slate-500'}`}>{item.stock}</span>
-                    <div className="w-1/6 text-right">
-                      <button onClick={() => initiateQtySelection(item)} className="bg-[#005a32] hover:bg-green-800 text-white px-4 py-1.5 rounded text-[10px] font-bold uppercase tracking-tighter shadow-sm">SELECT</button>
-                    </div>
-                  </div>))}
-                </div></>
+              )
             ) : (
-              <div className="p-8 text-center space-y-6">
-                <div className="mx-auto w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center shadow-inner">
-                  <Package size={32} />
+              <div className="p-6 space-y-4">
+                <div className="flex justify-between items-center">
+                  <h2 className="text-orange-600 font-bold">Remove Part</h2>
+                  <button onClick={() => setIsModalOpen(false)}>
+                    <X size={20}/>
+                  </button>
                 </div>
 
-                <div className="space-y-1">
-                  <h3 className="text-lg font-black text-slate-800 uppercase tracking-tight">Set Quantity</h3>
-                  <p className="text-xs text-slate-500 font-bold uppercase tracking-widest">{tempSelectedPart}</p>
-                </div>
+                <select required value={tempSelectedPart} onChange={(e) => setTempSelectedPart(e.target.value)} className="w-full border p-2 rounded">
+                  <option value="">Select Part</option>
+                  {sparePartsList.map((item, idx) => (
+                    <option key={idx} value={item.name}>
+                      {item.name}
+                    </option>
+                  ))}
+                </select>
 
-                <div className="space-y-2">
-                  <div className="flex items-center justify-center gap-6">
-                    <button onClick={() => setQtyValue(Math.max(1, qtyValue - 1))} className="p-3 bg-slate-100 rounded-xl hover:bg-slate-200 active:scale-90 transition-all text-slate-600 shadow-sm">
-                      <Minus size={24} strokeWidth={3}/>
-                    </button>
-                    <div className="flex flex-col items-center">
-                      <input type="number" value={qtyValue} onChange={(e) => { const val = parseInt(e.target.value) || 1; setQtyValue(val > currentMaxStock ? currentMaxStock : val); }} className="w-24 text-center text-3xl font-black text-blue-600 outline-none bg-transparent" />
-                      <span className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Limit: {qtyValue} / 
-                        <span className="text-blue-500">{currentMaxStock}</span>
-                      </span>
-                    </div>
-                    <button onClick={() => setQtyValue(qtyValue < currentMaxStock ? qtyValue + 1 : qtyValue)} className={`p-3 rounded-xl transition-all shadow-sm ${qtyValue >= currentMaxStock ? 'bg-slate-50 text-slate-300' : 'bg-slate-100 text-slate-600 hover:bg-slate-200 active:scale-90'}`}>
-                      <Plus size={24} strokeWidth={3}/>
-                    </button>
-                  </div>{qtyValue >= currentMaxStock && (<p className="text-[9px] text-red-500 font-bold uppercase flex items-center justify-center gap-1"><AlertCircle size={10} /> Maximum stock reached</p>)}
-                </div>
+                <input required type="number" value={qtyValue} className="w-full border p-2 rounded"
+                  onChange={(e) => setQtyValue(parseInt(e.target.value) || 1)}/>
 
-                <div className="flex gap-3 pt-4">
-                  <button onClick={() => setShowQtySelection(false)} className="flex-1 px-6 py-3 rounded-xl text-xs font-black bg-slate-100 text-slate-500 uppercase hover:bg-slate-200 flex items-center justify-center gap-2"><ChevronLeft size={16}/> Back</button>
-                  <button onClick={finalizePartAddition} className="flex-1 px-6 py-3 rounded-xl text-xs font-black bg-blue-600 text-white uppercase hover:bg-blue-700 shadow-lg shadow-blue-200 flex items-center justify-center gap-2"><Save size={16}/> Add Part</button>
-                </div>
+                <select required value={workType} onChange={(e) => setWorkType(e.target.value)} className="w-full border p-2 rounded">
+                  <option value="">Condition</option>
+                  <option value="refurbish">Refurbish</option>
+                  <option value="repair">Repair</option>
+                  <option value="scrap">Scrap</option>
+                </select>
+
+                <button onClick={finalizeRemovePart} className="w-full bg-orange-600 text-white py-2 rounded">
+                  Add Removed Part
+                </button>
               </div>
             )}
           </div>
