@@ -1,8 +1,6 @@
 "use client";
 import { useState} from 'react';
-import { 
-  Save, X, Settings, FileText, CheckSquare, Square 
-} from 'lucide-react';
+import { Save, X, Settings, FileText, CheckSquare, Square } from 'lucide-react';
 import { useRouter } from "next/navigation";
 
 const CreateSPK = () => {
@@ -15,22 +13,24 @@ const CreateSPK = () => {
   // --- Laporan Selection State ---
   const [isLaporanModalOpen, setIsLaporanModalOpen] = useState(false);
   const [selectedLaporan, setSelectedLaporan] = useState<string[]>([]);
-  const laporanMasterList = [
-    { id: "LOG-2026-001", date: "2026-10-01", reporter: "Budi", category: "Breakdown", details: "Alat tidak bisa nyala", notes: "" },
-    { id: "LOG-2026-002", date: "2026-10-02", reporter: "Joko", category: "Maintenance", details: "Perbaikan rutin", notes: "[2026/10/04 - Toni] Diperbaiki pada next PM" },
-    { id: "LOG-2026-003", date: "2026-10-03", reporter: "Tono", category: "Breakdown", details: "SLING CARGO PUTUS", notes: "" },
-    { id: "LOG-2026-004", date: "2026-10-04", reporter: "Anto", category: "Breakdown", details: "Steering berat", notes: "" },
-    { id: "LOG-2026-005", date: "2026-10-05", reporter: "Vin", category: "Maintenance", details: "Oli netes dari engine", notes: "[2026/10/07 - Toni] Perlu rutin tambah oli, perbaikan pada next PM" }
+  const [isDocOpen, setIsDocOpen] = useState(false);
+  const [selectedDoc, setSelectedDoc] = useState<any>(null);
+
+  const laporanBreakdownList = [
+    { id: "LOG-2026-001", date: "2026-10-03", downtime: "2026-10-02 16:42", reporter: "Bowo", details: "Alat tidak bisa nyala"},
+  ];
+  const laporanMekanikList = [
+    { id: "LOG-2026-002", date: "2026-10-02", reporter: "Joko", details: "Perbaikan rutin", notes: "[2026/10/04 - Toni] Diperbaiki pada next PM" },
+    { id: "LOG-2026-005", date: "2026-10-05", reporter: "Vin", details: "Oli netes dari engine", notes: "[2026/10/07 - Toni] Perlu rutin tambah oli, perbaikan pada next PM" }
   ];
   const pmMasterList = [
-    {
-      id: "PM-500",
-      currentHM: 490,
-      hmTarget: "487 - 587",
-      avgHM: 14,
-      datePrediction: "17 March 2026 - 24 March 2026"
-    }
+    { id: "PM-500", currentHM: 490, hmTarget: "487 - 587", avgHM: 14, datePrediction: "17 March 2026 - 24 March 2026"}
   ];
+
+  const openDocumentation = (data: any) => {
+    setSelectedDoc(data);
+    setIsDocOpen(true);
+  };
 
   // PM Selection
   const [selectedPM, setSelectedPM] = useState<string[]>([]);
@@ -158,40 +158,102 @@ const CreateSPK = () => {
       {/* --- LAPORAN POPUP MODAL --- */}
       {isLaporanModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-lg shadow-2xl w-full max-w-5xl max-h-[85vh] flex flex-col border-2 border-blue-600">
+          <div className="bg-white rounded-lg shadow-2xl w-full max-w-5xl max-h-[100vh] flex flex-col border-2 border-blue-600">
             <div className="p-4 bg-blue-600 text-white flex justify-between items-center">
               <h2 className="font-bold uppercase tracking-tight flex items-center gap-2"><FileText size={18} /> Pilih No. Laporan</h2>
               <button onClick={() => setIsLaporanModalOpen(false)} className="hover:bg-blue-700 rounded-full p-1"><X size={20} /></button>
             </div>
 
-            {/* Laporan Table */}
-            <div className="overflow-auto max-h-[250px]">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
-                  <tr>
-                    <th className="px-4 py-3 text-center w-12">Select</th>
-                    <th className="px-10 py-3">No. Laporan</th>
-                    <th className="px-10 py-3">Tanggal Laporan</th>
-                    <th className="px-4 py-3">Pelapor</th>
-                    <th className="px-4 py-3">Kategori</th>
-                    <th className="px-4 py-3">Detail Laporan</th>
-                    <th className="px-10 py-3">Keterangan Mekanik</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {laporanMasterList.map((lap) => (
-                    <tr key={lap.id} onClick={() => toggleLaporanSelection(lap.id)} className={`cursor-pointer hover:bg-blue-50 transition-colors ${selectedLaporan.includes(lap.id) ? 'bg-blue-50/50' : ''}`}>
-                      <td className="px-4 py-3 text-center">{selectedLaporan.includes(lap.id) ? <CheckSquare size={18} className="text-blue-600 mx-auto" /> : <Square size={18} className="text-slate-300 mx-auto" />}</td>
-                      <td className="px-4 py-3 font-bold text-blue-700">{lap.id}</td>
-                      <td className="px-4 py-3 font-medium">{lap.date}</td>
-                      <td className="px-4 py-3 text-red-600 font-bold">{lap.reporter}</td>
-                      <td className="px-4 py-3">{lap.category}</td>
-                      <td className="px-4 py-3">{lap.details}</td>
-                      <td className="px-4 py-3">{lap.notes}</td>
+            {/* Laporan Breakdown Table */}
+            <div className="border-t border-slate-200">
+              <div className="p-3 bg-slate-50 font-bold text-xs uppercase tracking-wider text-slate-500">
+                Laporan Breakdown
+              </div>
+
+              <div className="overflow-auto max-h-[200px]">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                    <tr>
+                      <th className="px-4 py-3 text-center w-12">Select</th>
+                      <th className="px-4 py-3">No. Laporan</th>
+                      <th className="px-4 py-3">Tanggal Laporan</th>
+                      <th className="px-4 py-3">Pelapor</th>
+                      <th className="px-4 py-3">Downtime</th>
+                      <th className="px-4 py-3">Detail Laporan</th>
+                      <th className="px-4 py-3 text-center">Doc</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {laporanBreakdownList.map((lb) => (
+                      <tr
+                        key={lb.id}
+                        onClick={() => toggleLaporanSelection(lb.id)}
+                        className={`cursor-pointer hover:bg-blue-50 transition-colors ${
+                          selectedLaporan.includes(lb.id) ? 'bg-blue-50/50' : ''
+                        }`}>
+                        <td className="px-4 py-3 text-center">
+                          {selectedLaporan.includes(lb.id)
+                            ? <CheckSquare size={18} className="text-blue-600 mx-auto" />
+                            : <Square size={18} className="text-slate-300 mx-auto" />
+                          }
+                        </td>
+                        <td className="px-4 py-3 font-bold text-blue-700">{lb.id}</td>
+                        <td className="px-4 py-3">{lb.date}</td>
+                        <td className="px-4 py-3 text-red-600 font-bold">{lb.reporter}</td>
+                        <td className="px-4 py-3">{lb.downtime}</td>
+                        <td className="px-4 py-3">{lb.details}</td>
+                        <td className="px-4 py-3 text-center">
+                          <button onClick={(e) => { e.stopPropagation(); openDocumentation(lb);}}
+                            className="bg-blue-500 text-white px-2 py-1 rounded text-[10px] hover:bg-blue-700 transition-colors">
+                            Lihat
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+
+            {/* Laporan Table */}
+            <div className="border-t border-slate-200">
+              <div className="p-3 bg-slate-50 font-bold text-xs uppercase tracking-wider text-slate-500">
+                  Laporan Mekanik
+                </div>
+              <div className="overflow-auto max-h-[150px]">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                    <tr>
+                      <th className="px-4 py-3 text-center w-12">Select</th>
+                      <th className="px-4 py-3">No. Laporan</th>
+                      <th className="px-4 py-3">Tanggal Laporan</th>
+                      <th className="px-4 py-3">Pelapor</th>
+                      <th className="px-4 py-3">Detail Laporan</th>
+                      <th className="px-4 py-3 text-center">Keterangan Pre-Check</th>
+                      <th className="px-4 py-3 text-center">Doc</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {laporanMekanikList.map((lap) => (
+                      <tr key={lap.id} onClick={() => toggleLaporanSelection(lap.id)} className={`cursor-pointer hover:bg-blue-50 transition-colors ${selectedLaporan.includes(lap.id) ? 'bg-blue-50/50' : ''}`}>
+                        <td className="px-4 py-3 text-center">{selectedLaporan.includes(lap.id) ? <CheckSquare size={18} className="text-blue-600 mx-auto" /> : <Square size={18} className="text-slate-300 mx-auto" />}</td>
+                        <td className="px-4 py-3 font-bold text-blue-700">{lap.id}</td>
+                        <td className="px-4 py-3 font-medium">{lap.date}</td>
+                        <td className="px-4 py-3 text-red-600 font-bold">{lap.reporter}</td>
+                        <td className="px-4 py-3">{lap.details}</td>
+                        <td className="px-4 py-3">{lap.notes}</td>
+                        <td className="px-4 py-3 text-center">
+                          <button onClick={(e) => { e.stopPropagation(); openDocumentation(lap);}}
+                            className="bg-blue-500 text-white px-2 py-1 rounded text-[10px] hover:bg-blue-700 transition-colors">
+                            Lihat
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             {/* Preventive Maintenance Table */}
@@ -238,9 +300,65 @@ const CreateSPK = () => {
               </div>
 
             </div>
+
             <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
               <button onClick={() => setIsLaporanModalOpen(false)} className="px-6 py-2 bg-blue-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-blue-700 shadow-md">Confirm Selection</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {isDocOpen && selectedDoc && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[70]">
+          <div className="bg-white w-[600px] rounded-lg shadow-xl overflow-hidden">
+            
+            <div className="bg-slate-900 text-white p-4 flex justify-between items-center">
+              <h2 className="font-bold text-sm">Documentation</h2>
+              <button className='bg-slate-600 hover:bg-slate-700 rounded-lg p-1' onClick={() => setIsDocOpen(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-5 text-sm space-y-3">
+
+              <div>
+                <span className="font-bold">No Laporan:</span> {selectedDoc.id}
+              </div>
+
+              <div>
+                <span className="font-bold">Tanggal:</span> {selectedDoc.date}
+              </div>
+
+              <div>
+                <span className="font-bold">Pelapor:</span> {selectedDoc.reporter}
+              </div>
+
+              <div>
+                <span className="font-bold">Detail:</span> {selectedDoc.details}
+              </div>
+
+              {/* khusus breakdown */}
+              {selectedDoc.downtime && (
+                <div>
+                  <span className="font-bold">Downtime:</span> {selectedDoc.downtime}
+                </div>
+              )}
+
+              {/* khusus mekanik */}
+              {selectedDoc.notes && (
+                <div>
+                  <span className="font-bold">Notes:</span> {selectedDoc.notes}
+                </div>
+              )}
+
+            </div>
+
+            <div className="p-4 bg-slate-50 flex justify-end">
+              <button onClick={() => setIsDocOpen(false)} className="px-4 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-700 transition-colors">
+                Close
+              </button>
+            </div>
+
           </div>
         </div>
       )}
