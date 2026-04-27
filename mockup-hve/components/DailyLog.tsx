@@ -221,17 +221,17 @@ const DailyLogActivity = () => {
   // Spare Part Logic
   const sparePartsList = [
     { code: "228C0-80012", name: "CYLINDER ASSY LIFT", field_name: "CYLINDER ASSY LIFT", 
-      category_code: "MSLL", category: "MESIN LAIN - LAIN", satuan: "PCS", status:"NORMAL",  stock: 12 },
+      category_code: "MSLL", category: "MESIN LAIN - LAIN", satuan: "PCS", type:"",  stock: 12 },
     { code: "[RFB] 228C0-80012", name: "[RFB]CYLINDER ASSY LIFT", field_name: "CYLINDER ASSY LIFT", 
-      category_code: "MSLL", category: "MESIN LAIN - LAIN", satuan: "PCS", status:"NORMAL",  stock: 12 },
+      category_code: "MSLL", category: "MESIN LAIN - LAIN", satuan: "PCS", type:"",  stock: 12 },
     { code: "HVE.GSKT.800619", name: "GASKET KIT 80-0619 BOSPOM PF6", field_name: "80-0619 REPAIRKIT BOSCHPUMP PF-6", 
-      category_code: "HVE", category: "HEAVY EQUIPMENT", satuan: "SET",status:"CRITICAL", stock: 5 },
+      category_code: "HVE", category: "HEAVY EQUIPMENT", satuan: "SET",type:"CRITICAL", stock: 5 },
     { code: "KWLS2.5SUPERSETE", name: "MAC SUPER STEEL 🚫 2.5MM", field_name: "MAC SUPER STEEL A 2.5MM", 
-      category_code: "KWLS", category: "KAWAT LAS", satuan: "KG", status:"CRITICAL", stock: 5 },
+      category_code: "KWLS", category: "KAWAT LAS", satuan: "KG", type:"CRITICAL", stock: 5 },
     { code: "NIS.260.AA21002", name: "159620-6821002 ACTUATOR ASSY GOVERNOR NISSAN EURO PK260", field_name: "GOVERNOR PK 260", 
-      category_code: "NIS PK260", category: "MESIN NISSAN EURO PK260", satuan: "PCS", status:"NORMAL", stock: 0 },
+      category_code: "NIS PK260", category: "MESIN NISSAN EURO PK260", satuan: "PCS", type:"", stock: 0 },
     { code: "HOSE.HREL3X3", name: 'HOSE RADIATOR ELBOW 🚫 3" X 3"', field_name: 'HOSE RADIATOR ELBOW A 3" X 3"', 
-      category_code: "HOSE", category: "SELANG / HOSE", satuan: "MTR", status:"NORMAL", stock: 500 }
+      category_code: "HOSE", category: "SELANG / HOSE", satuan: "MTR", type:"", stock: 500 }
   ];
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showQtySelection, setShowQtySelection] = useState(false);
@@ -804,13 +804,13 @@ const DailyLogActivity = () => {
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
                     <tr>
-                      <th className="px-4 py-3 text-center w-12">Select</th>
                       <th className="px-4 py-3">No. Laporan</th>
                       <th className="px-4 py-3">Tanggal Laporan</th>
                       <th className="px-4 py-3">Pelapor</th>
                       <th className="px-4 py-3">Downtime</th>
                       <th className="px-4 py-3">Detail Laporan</th>
                       <th className="px-4 py-3 text-center">Doc</th>
+                      <th className="px-4 py-3 text-center w-12">Select</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -821,12 +821,6 @@ const DailyLogActivity = () => {
                         className={`cursor-pointer hover:bg-blue-50 transition-colors ${
                           selectedReports.some(r => r.id === lb.id && r.type === "laporan") ? 'bg-blue-50/50' : ''
                         }`}>
-                        <td className="px-4 py-3 text-center">
-                          {selectedReports.some(r => r.id === lb.id && r.type === "laporan")
-                            ? <CheckSquare size={18} className="text-blue-600 mx-auto" />
-                            : <Square size={18} className="text-slate-300 mx-auto" />
-                          }
-                        </td>
                         <td className="px-4 py-3 font-bold text-blue-700">{lb.id}</td>
                         <td className="px-4 py-3">{lb.date}</td>
                         <td className="px-4 py-3 text-red-600 font-bold">{lb.reporter}</td>
@@ -837,6 +831,12 @@ const DailyLogActivity = () => {
                             className="bg-blue-500 text-white px-2 py-1 rounded text-[10px] hover:bg-blue-700 transition-colors">
                             Lihat
                           </button>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {selectedReports.some(r => r.id === lb.id && r.type === "laporan")
+                            ? <CheckSquare size={18} className="text-blue-600 mx-auto" />
+                            : <Square size={18} className="text-slate-300 mx-auto" />
+                          }
                         </td>
                       </tr>
                     ))}
@@ -855,19 +855,18 @@ const DailyLogActivity = () => {
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
                     <tr>
-                      <th className="px-4 py-3 text-center w-12">Select</th>
                       <th className="px-4 py-3">No. Laporan</th>
                       <th className="px-4 py-3">Tanggal Laporan</th>
                       <th className="px-4 py-3">Pelapor</th>
                       <th className="px-4 py-3">Detail Laporan</th>
                       <th className="px-4 py-3 text-center">Keterangan Pre-Check</th>
                       <th className="px-4 py-3 text-center">Doc</th>
+                      <th className="px-4 py-3 text-center w-12">Select</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {laporanMekanikList.map((lap) => (
                       <tr key={lap.id} onClick={() => toggleReportSelection(lap, "laporan")} className={`cursor-pointer hover:bg-blue-50 transition-colors ${selectedReports.some(r => r.id === lap.id && r.type === "laporan") ? 'bg-blue-50/50' : ''}`}>
-                        <td className="px-4 py-3 text-center">{selectedReports.some(r => r.id === lap.id && r.type === "laporan") ? <CheckSquare size={18} className="text-blue-600 mx-auto" /> : <Square size={18} className="text-slate-300 mx-auto" />}</td>
                         <td className="px-4 py-3 font-bold text-blue-700">{lap.id}</td>
                         <td className="px-4 py-3 font-medium">{lap.date}</td>
                         <td className="px-4 py-3 text-red-600 font-bold">{lap.reporter}</td>
@@ -879,6 +878,7 @@ const DailyLogActivity = () => {
                             Lihat
                           </button>
                         </td>
+                        <td className="px-4 py-3 text-center">{selectedReports.some(r => r.id === lap.id && r.type === "laporan") ? <CheckSquare size={18} className="text-blue-600 mx-auto" /> : <Square size={18} className="text-slate-300 mx-auto" />}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -896,12 +896,12 @@ const DailyLogActivity = () => {
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
                     <tr>
-                      <th className="px-4 py-3 text-center w-12">Select</th>
                       <th className="px-4 py-3">PM Type</th>
                       <th className="px-4 py-3">Current HM</th>
                       <th className="px-4 py-3">HM Target</th>
                       <th className="px-4 py-3">AVG HM / Day</th>
                       <th className="px-4 py-3">Date Prediction</th>
+                      <th className="px-4 py-3 text-center w-12">Select</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -912,17 +912,17 @@ const DailyLogActivity = () => {
                         className={`cursor-pointer hover:bg-blue-50 transition-colors ${
                           selectedReports.some(r => r.id === pm.id && r.type === "pm") ? 'bg-blue-50/50' : ''
                         }`}>
+                        <td className="px-4 py-3 font-bold text-blue-700">{pm.id}</td>
+                        <td className="px-4 py-3">{pm.currentHM}</td>
+                        <td className="px-4 py-3">{pm.hmTarget}</td>
+                        <td className="px-4 py-3">{pm.avgHM}</td>
+                        <td className="px-4 py-3">{pm.datePrediction}</td>
                         <td className="px-4 py-3 text-center">
                           {selectedReports.some(r => r.id === pm.id && r.type === "pm")
                             ? <CheckSquare size={18} className="text-blue-600 mx-auto" />
                             : <Square size={18} className="text-slate-300 mx-auto" />
                           }
                         </td>
-                        <td className="px-4 py-3 font-bold text-blue-700">{pm.id}</td>
-                        <td className="px-4 py-3">{pm.currentHM}</td>
-                        <td className="px-4 py-3">{pm.hmTarget}</td>
-                        <td className="px-4 py-3">{pm.avgHM}</td>
-                        <td className="px-4 py-3">{pm.datePrediction}</td>  
                       </tr>
                     ))}
                   </tbody>
@@ -1086,7 +1086,7 @@ const DailyLogActivity = () => {
                     <span>Category Code</span>
                     <span>Part Category</span>
                     <span>Unit</span>
-                    <span>Status</span>
+                    <span>Type</span>
                     <span className="text-center">Stock</span>
                     <span className="text-center">Action</span>
                   </div>
@@ -1099,7 +1099,7 @@ const DailyLogActivity = () => {
                       <span className="text-sm font-medium text-slate-700">{item.category_code}</span>
                       <span className="text-sm font-medium text-slate-700">{item.category}</span>
                       <span className="text-sm font-medium text-slate-700">{item.satuan}</span>
-                      <span className="text-sm font-medium text-slate-700">{item.status}</span>
+                      <span className="text-sm font-bold text-red-600 bg-red-100 px-2 rounded">{item.type}</span>
                       <span className={`text-xs font-black text-center ${item.stock < 10 ? 'text-red-600' : 'text-slate-500'}`}>{item.stock}</span>
                       <div className="text-right">
                         <button onClick={() => initiateQtySelection(item)} className="bg-[#005a32] hover:bg-green-800 text-white px-4 py-1.5 rounded text-[10px] font-bold uppercase tracking-tighter shadow-sm">SELECT</button>
