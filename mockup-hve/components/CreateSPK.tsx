@@ -2,10 +2,8 @@
 import { useState} from 'react';
 import { Save, X, Settings, FileText, CheckSquare, Square,
   BarChart3,Search, Download} from 'lucide-react';
-import { useRouter } from "next/navigation";
 
 const CreateSPK = () => {
-  const router = useRouter();
 
   // Equipment & Code State
   const [equipName, setEquipName] = useState("");
@@ -69,7 +67,8 @@ const CreateSPK = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
-      <main className="max-w-7xl mx-auto p-8">
+      <main className="max-w-7xl mx-auto p-5">
+
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold flex items-center gap-2"><FileText className="text-blue-600" size={24}/>Create SPK</h2>
           <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Create Mode</span>

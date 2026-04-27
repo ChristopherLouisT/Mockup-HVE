@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 
 const DailyLogActivity = () => {
+
   const [activities, setActivities] = useState<any[]>([]);
   const [mechanics, setMechanics] = useState<string[]>([]);
   const [helpers, setHelpers] = useState<string[]>([]);
@@ -408,26 +409,7 @@ const DailyLogActivity = () => {
       <datalist id="failure-types">{availableFailures.map((f, i) => <option key={i} value={f} />)}</datalist>
       <datalist id="action-types">{availableActions.map((a, i) => <option key={i} value={a} />)}</datalist>
 
-      <main className="max-w-7xl mx-auto p-8">
-
-        <div className="flex gap-2 mb-5">
-          <select className="bg-[#0b6b3a] text-white px-3 py-1 text-xs font-bold">
-            <option>TRANSAKSI</option>
-            <option>Create SPK</option>
-            <option>Daily Log</option>
-          </select>
-
-          <select className="bg-[#0b6b3a] text-white px-3 py-1 text-xs font-bold">
-            <option>REPORT</option>
-          </select>
-
-          <select className="bg-[#0b6b3a] text-white px-3 py-1 text-xs font-bold">
-            <option>MONITORING</option>
-            <option>SRT</option>
-            <option>Oil</option>
-            <option>Fuel</option>
-          </select>
-        </div>
+      <main className="max-w-7xl mx-auto p-5">
 
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold flex items-center gap-2"><FileText className="text-blue-600" size={24}/>Daily Log Activity</h2>
