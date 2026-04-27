@@ -801,16 +801,16 @@ const DailyLogActivity = () => {
               </div>
 
               <div className="overflow-auto max-h-[200px]">
-                <table className="w-full text-left text-xs border-collapse">
+                <table className="w-full table-fixed text-left text-xs border-collapse">
                   <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
                     <tr>
-                      <th className="px-4 py-3">No. Laporan</th>
-                      <th className="px-4 py-3">Tanggal Laporan</th>
-                      <th className="px-4 py-3">Pelapor</th>
-                      <th className="px-4 py-3">Downtime</th>
+                      <th className="px-4 py-3 w-[140px]">No. Laporan</th>
+                      <th className="px-4 py-3 w-[140px]">Tanggal Laporan</th>
+                      <th className="px-4 py-3 w-[120px]">Pelapor</th>
+                      <th className="px-4 py-3 w-[140px]">Downtime</th>
                       <th className="px-4 py-3">Detail Laporan</th>
-                      <th className="px-4 py-3 text-center">Doc</th>
-                      <th className="px-4 py-3 text-center w-12">Select</th>
+                      <th className="px-4 py-3 text-center w-[80px]">Doc</th>
+                      <th className="px-4 py-3 text-center w-[60px]">Select</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -852,16 +852,16 @@ const DailyLogActivity = () => {
                   Laporan Mekanik
                 </div>
               <div className="overflow-auto max-h-[150px]">
-                <table className="w-full text-left text-xs border-collapse">
+                <table className="w-full table-fixed text-left text-xs border-collapse">
                   <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
                     <tr>
-                      <th className="px-4 py-3">No. Laporan</th>
-                      <th className="px-4 py-3">Tanggal Laporan</th>
-                      <th className="px-4 py-3">Pelapor</th>
-                      <th className="px-4 py-3">Detail Laporan</th>
-                      <th className="px-4 py-3 text-center">Keterangan Pre-Check</th>
-                      <th className="px-4 py-3 text-center">Doc</th>
-                      <th className="px-4 py-3 text-center w-12">Select</th>
+                      <th className="px-4 py-3 w-[140px]">No. Laporan</th>
+                      <th className="px-4 py-3 w-[140px]">Tanggal Laporan</th>
+                      <th className="px-4 py-3 w-[120px]">Pelapor</th>
+                      <th className="px-4 py-3 w-[140px]">Detail Laporan</th>
+                      <th className="px-4 py-3">Keterangan Pre-Check</th>
+                      <th className="px-4 py-3 text-center w-[80px]">Doc</th>
+                      <th className="px-4 py-3 text-center w-[60px]">Select</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -893,15 +893,15 @@ const DailyLogActivity = () => {
               </div>
 
               <div className="overflow-auto max-h-[200px]">
-                <table className="w-full text-left text-xs border-collapse">
+                <table className="w-full table-fixed text-left text-xs border-collapse">
                   <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
                     <tr>
-                      <th className="px-4 py-3">PM Type</th>
-                      <th className="px-4 py-3">Current HM</th>
-                      <th className="px-4 py-3">HM Target</th>
-                      <th className="px-4 py-3">AVG HM / Day</th>
+                      <th className="px-4 py-3 w-[140px]">PM Type</th>
+                      <th className="px-4 py-3 w-[140px]">Current HM</th>
+                      <th className="px-4 py-3 w-[120px]">HM Target</th>
+                      <th className="px-4 py-3 w-[140px]">AVG HM / Day</th>
                       <th className="px-4 py-3">Date Prediction</th>
-                      <th className="px-4 py-3 text-center w-12">Select</th>
+                      <th className="px-4 py-3 text-center w-[60px]">Select</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
