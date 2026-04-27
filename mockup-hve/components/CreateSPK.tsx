@@ -327,13 +327,13 @@ const CreateSPK = () => {
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
                     <tr>
-                      <th className="px-4 py-3 text-center w-12">Select</th>
                       <th className="px-4 py-3">No. Laporan</th>
                       <th className="px-4 py-3">Tanggal Laporan</th>
                       <th className="px-4 py-3">Pelapor</th>
                       <th className="px-4 py-3">Downtime</th>
                       <th className="px-4 py-3">Detail Laporan</th>
                       <th className="px-4 py-3 text-center">Doc</th>
+                      <th className="px-4 py-3 text-center w-12">Select</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -344,12 +344,6 @@ const CreateSPK = () => {
                         className={`cursor-pointer hover:bg-blue-50 transition-colors ${
                           selectedLaporan.includes(lb.id) ? 'bg-blue-50/50' : ''
                         }`}>
-                        <td className="px-4 py-3 text-center">
-                          {selectedLaporan.includes(lb.id)
-                            ? <CheckSquare size={18} className="text-blue-600 mx-auto" />
-                            : <Square size={18} className="text-slate-300 mx-auto" />
-                          }
-                        </td>
                         <td className="px-4 py-3 font-bold text-blue-700">{lb.id}</td>
                         <td className="px-4 py-3">{lb.date}</td>
                         <td className="px-4 py-3 text-red-600 font-bold">{lb.reporter}</td>
@@ -360,6 +354,12 @@ const CreateSPK = () => {
                             className="bg-blue-500 text-white px-2 py-1 rounded text-[10px] hover:bg-blue-700 transition-colors">
                             Lihat
                           </button>
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {selectedLaporan.includes(lb.id)
+                            ? <CheckSquare size={18} className="text-blue-600 mx-auto" />
+                            : <Square size={18} className="text-slate-300 mx-auto" />
+                          }
                         </td>
                       </tr>
                     ))}
@@ -378,19 +378,18 @@ const CreateSPK = () => {
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
                     <tr>
-                      <th className="px-4 py-3 text-center w-12">Select</th>
                       <th className="px-4 py-3">No. Laporan</th>
                       <th className="px-4 py-3">Tanggal Laporan</th>
                       <th className="px-4 py-3">Pelapor</th>
                       <th className="px-4 py-3">Detail Laporan</th>
                       <th className="px-4 py-3 text-center">Keterangan Pre-Check</th>
                       <th className="px-4 py-3 text-center">Doc</th>
+                      <th className="px-4 py-3 text-center w-12">Select</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {laporanMekanikList.map((lap) => (
                       <tr key={lap.id} onClick={() => toggleLaporanSelection(lap.id)} className={`cursor-pointer hover:bg-blue-50 transition-colors ${selectedLaporan.includes(lap.id) ? 'bg-blue-50/50' : ''}`}>
-                        <td className="px-4 py-3 text-center">{selectedLaporan.includes(lap.id) ? <CheckSquare size={18} className="text-blue-600 mx-auto" /> : <Square size={18} className="text-slate-300 mx-auto" />}</td>
                         <td className="px-4 py-3 font-bold text-blue-700">{lap.id}</td>
                         <td className="px-4 py-3 font-medium">{lap.date}</td>
                         <td className="px-4 py-3 text-red-600 font-bold">{lap.reporter}</td>
@@ -402,6 +401,7 @@ const CreateSPK = () => {
                             Lihat
                           </button>
                         </td>
+                        <td className="px-4 py-3 text-center">{selectedLaporan.includes(lap.id) ? <CheckSquare size={18} className="text-blue-600 mx-auto" /> : <Square size={18} className="text-slate-300 mx-auto" />}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -419,12 +419,12 @@ const CreateSPK = () => {
                 <table className="w-full text-left text-xs border-collapse">
                   <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
                     <tr>
-                      <th className="px-4 py-3 text-center w-12">Select</th>
                       <th className="px-4 py-3">PM Type</th>
                       <th className="px-4 py-3">Current HM</th>
                       <th className="px-4 py-3">HM Target</th>
                       <th className="px-4 py-3">AVG HM / Day</th>
                       <th className="px-4 py-3">Date Prediction</th>
+                      <th className="px-4 py-3 text-center w-12">Select</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -435,17 +435,17 @@ const CreateSPK = () => {
                         className={`cursor-pointer hover:bg-blue-50 transition-colors ${
                           selectedPM.includes(pm.id) ? 'bg-blue-50/50' : ''
                         }`}>
+                        <td className="px-4 py-3 font-bold text-blue-700">{pm.id}</td>
+                        <td className="px-4 py-3">{pm.currentHM}</td>
+                        <td className="px-4 py-3">{pm.hmTarget}</td>
+                        <td className="px-4 py-3">{pm.avgHM}</td>
+                        <td className="px-4 py-3">{pm.datePrediction}</td>
                         <td className="px-4 py-3 text-center">
                           {selectedPM.includes(pm.id)
                             ? <CheckSquare size={18} className="text-blue-600 mx-auto" />
                             : <Square size={18} className="text-slate-300 mx-auto" />
                           }
                         </td>
-                        <td className="px-4 py-3 font-bold text-blue-700">{pm.id}</td>
-                        <td className="px-4 py-3">{pm.currentHM}</td>
-                        <td className="px-4 py-3">{pm.hmTarget}</td>
-                        <td className="px-4 py-3">{pm.avgHM}</td>
-                        <td className="px-4 py-3">{pm.datePrediction}</td>  
                       </tr>
                     ))}
                   </tbody>
