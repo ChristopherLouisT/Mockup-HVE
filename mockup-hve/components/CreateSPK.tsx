@@ -1,6 +1,7 @@
 "use client";
 import { useState} from 'react';
-import { Save, X, Settings, FileText, CheckSquare, Square } from 'lucide-react';
+import { Save, X, Settings, FileText, CheckSquare, Square,
+  BarChart3,Search, Download} from 'lucide-react';
 import { useRouter } from "next/navigation";
 
 const CreateSPK = () => {
@@ -73,6 +74,158 @@ const CreateSPK = () => {
           <h2 className="text-2xl font-bold flex items-center gap-2"><FileText className="text-blue-600" size={24}/>Create SPK</h2>
           <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Create Mode</span>
         </div>
+
+        {/* <div className='flex flex-col gap-5 mb-10'> */}
+          {/* Laporan Breakdown Table */}
+          {/* <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="p-4 px-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                <BarChart3 size={16} /> Laporan Breakdown
+              </h3>
+              <div className="flex gap-2">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                  <input type="text" placeholder="Search Report..." className="pl-8 pr-4 py-1.5 text-[10px] border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 w-64" />
+                </div>
+                <button className="bg-[#005a32] text-white px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-2">
+                  <Download size={14} /> EXPORT CSV
+                </button>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-[12px] border-collapse">
+                <thead className="bg-slate-100/50 text-slate-500 font-black uppercase border-b border-slate-100">
+                  <tr>
+                    <th className="px-4 py-3">No. Laporan</th>
+                    <th className="px-4 py-3">Tanggal Laporan</th>
+                    <th className="px-4 py-3">Pelapor</th>
+                    <th className="px-4 py-3">Downtime</th>
+                    <th className="px-4 py-3">Detail Laporan</th>
+                    <th className="px-4 py-3 text-center">Doc</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50 font-bold">
+                  {laporanBreakdownList.map((lb) => (
+                    <tr
+                      key={lb.id}
+                      onClick={() => toggleLaporanSelection(lb.id)}
+                      className={`cursor-pointer hover:bg-blue-50 transition-colors ${
+                        selectedLaporan.includes(lb.id) ? 'bg-blue-50/50' : ''
+                      }`}>
+                      <td className="px-4 py-3 font-bold text-blue-700">{lb.id}</td>
+                      <td className="px-4 py-3">{lb.date}</td>
+                      <td className="px-4 py-3 text-red-600 font-bold">{lb.reporter}</td>
+                      <td className="px-4 py-3">{lb.downtime}</td>
+                      <td className="px-4 py-3">{lb.details}</td>
+                      <td className="px-4 py-3 text-center">
+                        <button onClick={(e) => { e.stopPropagation(); openDocumentation(lb);}}
+                          className="bg-blue-500 text-white px-2 py-1 rounded text-[10px] hover:bg-blue-700 transition-colors">
+                          Lihat
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div> */}
+
+          {/* Laporan Table */}
+          {/* <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="p-4 px-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                <BarChart3 size={16} /> Laporan Mekanik
+              </h3>
+              <div className="flex gap-2">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                  <input type="text" placeholder="Search Report..." className="pl-8 pr-4 py-1.5 text-[10px] border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 w-64" />
+                </div>
+                <button className="bg-[#005a32] text-white px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-2">
+                  <Download size={14} /> EXPORT CSV
+                </button>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-[12px] border-collapse">
+                <thead className="bg-slate-100/50 text-slate-500 font-black uppercase border-b border-slate-100">
+                  <tr>
+                    <th className="px-4 py-3">No. Laporan</th>
+                    <th className="px-4 py-3">Tanggal Laporan</th>
+                    <th className="px-4 py-3">Pelapor</th>
+                    <th className="px-4 py-3">Detail Laporan</th>
+                    <th className="px-4 py-3">Keterangan Pre-Check</th>
+                    <th className="px-4 py-3 text-center">Doc</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50 font-bold">
+                  {laporanMekanikList.map((lap) => (
+                    <tr key={lap.id} onClick={() => toggleLaporanSelection(lap.id)} className={`cursor-pointer hover:bg-blue-50 transition-colors ${selectedLaporan.includes(lap.id) ? 'bg-blue-50/50' : ''}`}>
+                      <td className="px-4 py-3 font-bold text-blue-700">{lap.id}</td>
+                      <td className="px-4 py-3 font-medium">{lap.date}</td>
+                      <td className="px-4 py-3 text-red-600 font-bold">{lap.reporter}</td>
+                      <td className="px-4 py-3">{lap.details}</td>
+                      <td className="px-4 py-3">{lap.notes}</td>
+                      <td className="px-4 py-3 text-center">
+                        <button onClick={(e) => { e.stopPropagation(); openDocumentation(lap);}}
+                          className="bg-blue-500 text-white px-2 py-1 rounded text-[10px] hover:bg-blue-700 transition-colors">
+                          Lihat
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div> */}
+
+          {/* Preventive Maintenance Table */}
+          {/* <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div className="p-4 px-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+              <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
+                <BarChart3 size={16} /> Preventive Maintenance
+              </h3>
+              <div className="flex gap-2">
+                <div className="relative">
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400" size={14} />
+                  <input type="text" placeholder="Search PM..." className="pl-8 pr-4 py-1.5 text-[10px] border border-slate-200 rounded-lg outline-none focus:ring-2 focus:ring-blue-500 w-64" />
+                </div>
+                <button className="bg-[#005a32] text-white px-3 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-2">
+                  <Download size={14} /> EXPORT CSV
+                </button>
+              </div>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-[12px] border-collapse">
+                <thead className="bg-slate-100/50 text-slate-500 font-black uppercase border-b border-slate-100">
+                  <tr>
+                    <th className="px-4 py-3">PM Type</th>
+                    <th className="px-4 py-3">Current HM</th>
+                    <th className="px-4 py-3">HM Target</th>
+                    <th className="px-4 py-3">AVG HM / Day</th>
+                    <th className="px-4 py-3">Next Date Prediction</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-50 font-bold">
+                  {pmMasterList.map((pm) => (
+                    <tr
+                      key={pm.id}
+                      onClick={() => togglePMSelection(pm.id)}
+                      className={`cursor-pointer hover:bg-blue-50 transition-colors ${
+                        selectedPM.includes(pm.id) ? 'bg-blue-50/50' : ''
+                      }`}>
+                      <td className="px-4 py-3 font-bold text-blue-700">{pm.id}</td>
+                      <td className="px-4 py-3">{pm.currentHM}</td>
+                      <td className="px-4 py-3">{pm.hmTarget}</td>
+                      <td className="px-4 py-3">{pm.avgHM}</td>
+                      <td className="px-4 py-3">{pm.datePrediction}</td>  
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div> */}
 
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -298,7 +451,6 @@ const CreateSPK = () => {
                   </tbody>
                 </table>
               </div>
-
             </div>
 
             <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">

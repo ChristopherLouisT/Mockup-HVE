@@ -26,7 +26,14 @@ const DailyLogActivity = () => {
 
   // --- Laporan Selection State ---
   const [isLaporanModalOpen, setIsLaporanModalOpen] = useState(false);
-  const [selectedLaporan, setSelectedLaporan] = useState<string[]>([]);
+  const [selectedReports, setSelectedReports] = useState<any[]>([]);
+  const [selectedReportDetail, setSelectedReportDetail] = useState<any>(null);
+  const [isReportDetailOpen, setIsReportDetailOpen] = useState(false);
+  const [autoReports, setAutoReports] = useState<string[]>([]);
+  const [isDocOpen, setIsDocOpen] = useState(false);
+  const [selectedDoc, setSelectedDoc] = useState<any>(null);
+  const selectedPM = selectedReports.find(r => r.type === "pm");
+
   const laporanMasterList = [
     { id: "LOG-2026-001", date: "2026-10-01", reporter: "Budi", category: "Breakdown", details: "Alat tidak bisa nyala", notes: "" },
     { id: "LOG-2026-002", date: "2026-10-02", reporter: "Joko", category: "Maintenance", details: "Perbaikan rutin", notes: "[2026/10/04 - Toni] Diperbaiki pada next PM" },
@@ -35,17 +42,70 @@ const DailyLogActivity = () => {
     { id: "LOG-2026-005", date: "2026-10-05", reporter: "Vin", category: "Maintenance", details: "Oli netes dari engine", notes: "[2026/10/07 - Toni] Perlu rutin tambah oli, perbaikan pada next PM" }
   ];
 
-  // PM
-  const [selectedPM, setSelectedPM] = useState<string[]>([]);
-  const pmMasterList = [
-    {
-      id: "PM-500",
-      currentHM: 490,
-      hmTarget: "487 - 587",
-      avgHM: 14,
-      datePrediction: "17 March 2026 - 24 March 2026"
-    }
+  // For Activity 
+  const laporanBreakdownList = [
+    { id: "LOG-2026-001", date: "2026-10-03", downtime: "2026-10-02 16:42", reporter: "Bowo", details: "Alat tidak bisa nyala"},
   ];
+  const laporanMekanikList = [
+    { id: "LOG-2026-002", date: "2026-10-02", reporter: "Joko", details: "Perbaikan rutin", notes: "[2026/10/04 - Toni] Diperbaiki pada next PM" },
+    { id: "LOG-2026-005", date: "2026-10-05", reporter: "Vin", details: "Oli netes dari engine", notes: "[2026/10/07 - Toni] Perlu rutin tambah oli, perbaikan pada next PM" }
+  ];
+  const pmMasterList = [
+    { id: "PM-500", currentHM: 490, hmTarget: "487 - 587", avgHM: 14, datePrediction: "17 March 2026 - 24 March 2026"}
+  ];
+
+  const pmPackages = {
+    "PM-500": {
+      component: "[0-0] SCHEDULED MAINT. (PM)",
+      failure: "Preventive Maintenance",
+      action: "Preventive Maintenance",
+      parts: [
+        {
+          name: "GREASE STANDARD",
+          field_name: "GREASE",
+          satuan: "KG",
+          qty: 2,
+          stock: 100,
+          needPurchase: false
+        }
+      ]
+    }
+  };
+
+  useEffect(() => {
+    const selectedPM = selectedReports.find(r => r.type === "pm");
+
+    if (selectedPM) {
+      const pmData = pmPackages[selectedPM.id];
+
+      if (pmData) {
+        setMainComp(pmData.component);
+        setFailType(pmData.failure);
+        setActType(pmData.action);
+      }
+    }
+  }, [selectedReports]);
+
+  const handleOpenReportDetail = (id: string) => {
+    const breakdown = laporanBreakdownList.find(r => r.id === id);
+    const mekanik = laporanMekanikList.find(r => r.id === id);
+    const pm = pmMasterList.find(r => r.id === id);
+
+    if (breakdown) {
+      setSelectedReportDetail({ ...breakdown, type: "breakdown" });
+    } else if (mekanik) {
+      setSelectedReportDetail({ ...mekanik, type: "mekanik" });
+    } else if (pm) {
+      setSelectedReportDetail({ ...pm, type: "pm" });
+    }
+
+    setIsReportDetailOpen(true);
+  };
+
+  const openDocumentation = (data: any) => {
+    setSelectedDoc(data);
+    setIsDocOpen(true);
+  };
 
   const generateRandomReports = () => {
     const randomLaporan =
@@ -54,16 +114,12 @@ const DailyLogActivity = () => {
     const randomPM =
       pmMasterList[Math.floor(Math.random() * pmMasterList.length)];
 
-    setSelectedLaporan([randomLaporan.id]);
-    setSelectedPM([randomPM.id]);
+    const result = [randomLaporan.id, randomPM.id];
 
-    return {
-      laporan: randomLaporan.id,
-      pm: randomPM.id
-    };
+    setAutoReports(result);
+
+    return result;
   };
-
-  const combinedReports = [...selectedLaporan, ...selectedPM];
 
   // Timing State
   const [waitLabor, setWaitLabor] = useState("");
@@ -131,125 +187,26 @@ const DailyLogActivity = () => {
   const handleEquipChange = (name: string) => {
     setEquipName(name);
     if (name) {
-      generateRandomReports();
+      const reports = generateRandomReports();
       setNoSPK(`SPK-${new Date().getFullYear()}-${Math.floor(Math.random() * 999).toString().padStart(3,'0')}`);
     } else {
       setNoSPK("");
+      setAutoReports([]);
     }
   };
 
-  const toggleLaporanSelection = (id: string) => {
+  const toggleReportSelection = (item: any, type: "laporan" | "pm") => {
+    const exists = selectedReports.find(r => r.id === item.id);
 
-    let updated: string[];
-
-    if (selectedLaporan.includes(id)) {
-      updated = selectedLaporan.filter(item => item !== id);
+    if (exists) {
+      setSelectedReports(prev => prev.filter(r => r.id !== item.id));
     } else {
-      updated = [...selectedLaporan, id];
-    }
-
-    setSelectedLaporan(updated);
-
-    if (updated.length > 0) {
-      const random = Math.floor(Math.random() * 999);
-      setNoSPK(`SPK-${new Date().getFullYear()}-${random.toString().padStart(3,'0')}`);
-    } else {
-      setNoSPK("");
+      setSelectedReports(prev => [...prev, { ...item, type }]);
     }
   };
 
-  // BPB State
-  const [isBPBModalOpen, setIsBPBModalOpen] = useState(false);
-  const [bpbSelections, setBpbSelections] = useState<any[]>([]);
+  // Locked Rows
   const [lockedRows, setLockedRows] = useState<number[]>([]);
-  const [generatedBPB, setGeneratedBPB] = useState<string | null>(null);
-  const [bpbList, setBpbList] = useState<any[]>([
-    {
-      noBPB: "BPB/123456/HVE/01/25",
-      part: "HYDRAULIC PUMP",
-      qty: 2,
-      activity: "HOIST WINCH - Pin Rem Cargo Lepas",
-      target: "LOKB-2026-001",
-      spk: "SPK-2026-101"
-    }
-  ]);
-
-  // BPB Generate Logic
-  const generateBPBPreview = () => {
-    const rows:any[] = [];
-
-    activities.forEach((act, actIndex) => {
-      act.installedParts.forEach((part:any, partIndex:number) => {
-
-        if (part.needPurchase && !part.inBPB) {
-          rows.push({
-            activityIndex: actIndex,
-            partIndex: partIndex,
-            name: part.name,
-            qty: Math.max(0, part.qty - part.stock),
-            shortage: Math.max(0, part.qty - part.stock), 
-            keterangan: `${noSPK} | ${act.subSystem} | ${act.failure}`,
-            checked: true, // auto checked
-            inBPB: false
-          });
-        }
-
-      });
-    });
-
-    setBpbSelections(rows);
-    setIsBPBModalOpen(true);
-  };
-
-  // BPB Checkbox Logic
-  const toggleBPBCheckbox = (index:number) => {
-    const updated = [...bpbSelections];
-    updated[index].checked = !updated[index].checked;
-    setBpbSelections(updated);
-  };
-
-  // BPB Save Logic
-  const saveBPB = () => {
-    const checked = bpbSelections.filter(r => r.checked);
-
-    if (checked.length === 0) {
-      alert("Pilih minimal 1 barang");
-      return;
-    }
-
-    const updatedActivities = [...activities];
-    const bpbNumber = `BPB/${Math.floor(Math.random()*999999)}/HVE/01/25`;
-    const newEntries:any[] = [];
-
-    checked.forEach(row => {
-      const act = updatedActivities[row.activityIndex];
-      updatedActivities[row.activityIndex]
-        .installedParts[row.partIndex]
-        .inBPB = true;
-
-      let target = "-";
-      if (act.docNumber?.startsWith("LOKB")) target = act.docNumber;
-      else if (act.docNumber?.startsWith("LOKK")) target = act.docNumber;
-      else target = "SELF";
-
-      newEntries.push({
-        noBPB: bpbNumber,
-        part: row.name,
-        qty: row.qty,
-        activity: `${act.subSystem} - ${act.failure}`,
-        target: target,
-        spk: `SPK-${new Date().getFullYear()}-${Math.floor(Math.random() * 999).toString().padStart(3,'0')}`
-      });
-    });
-
-    setActivities(updatedActivities);
-
-    const locked = checked.map(r => r.activityIndex);
-    setLockedRows(prev => [...new Set([...prev, ...locked])]);
-    setBpbList(prev => [...prev, ...newEntries]);
-    setGeneratedBPB(bpbNumber);
-    setIsBPBModalOpen(false);
-  };
 
   const availableFailures = useMemo(() => {
     if (!mainComp) return Array.from(new Set(masterStandardData.flatMap(d => d.failures)));
@@ -264,17 +221,17 @@ const DailyLogActivity = () => {
   // Spare Part Logic
   const sparePartsList = [
     { code: "228C0-80012", name: "CYLINDER ASSY LIFT", field_name: "CYLINDER ASSY LIFT", 
-      category_code: "MSLL", category: "MESIN LAIN - LAIN", satuan: "PCS",  stock: 12 },
+      category_code: "MSLL", category: "MESIN LAIN - LAIN", satuan: "PCS", status:"NORMAL",  stock: 12 },
     { code: "[RFB] 228C0-80012", name: "[RFB]CYLINDER ASSY LIFT", field_name: "CYLINDER ASSY LIFT", 
-      category_code: "MSLL", category: "MESIN LAIN - LAIN", satuan: "PCS",  stock: 12 },
+      category_code: "MSLL", category: "MESIN LAIN - LAIN", satuan: "PCS", status:"NORMAL",  stock: 12 },
     { code: "HVE.GSKT.800619", name: "GASKET KIT 80-0619 BOSPOM PF6", field_name: "80-0619 REPAIRKIT BOSCHPUMP PF-6", 
-      category_code: "HVE", category: "HEAVY EQUIPMENT", satuan: "SET", stock: 5 },
+      category_code: "HVE", category: "HEAVY EQUIPMENT", satuan: "SET",status:"CRITICAL", stock: 5 },
     { code: "KWLS2.5SUPERSETE", name: "MAC SUPER STEEL 🚫 2.5MM", field_name: "MAC SUPER STEEL A 2.5MM", 
-      category_code: "KWLS", category: "KAWAT LAS", satuan: "KG", stock: 5 },
+      category_code: "KWLS", category: "KAWAT LAS", satuan: "KG", status:"CRITICAL", stock: 5 },
     { code: "NIS.260.AA21002", name: "159620-6821002 ACTUATOR ASSY GOVERNOR NISSAN EURO PK260", field_name: "GOVERNOR PK 260", 
-      category_code: "NIS PK260", category: "MESIN NISSAN EURO PK260", satuan: "PCS", stock: 0 },
+      category_code: "NIS PK260", category: "MESIN NISSAN EURO PK260", satuan: "PCS", status:"NORMAL", stock: 0 },
     { code: "HOSE.HREL3X3", name: 'HOSE RADIATOR ELBOW 🚫 3" X 3"', field_name: 'HOSE RADIATOR ELBOW A 3" X 3"', 
-      category_code: "HOSE", category: "SELANG / HOSE", satuan: "MTR", stock: 500 }
+      category_code: "HOSE", category: "SELANG / HOSE", satuan: "MTR", status:"NORMAL", stock: 500 }
   ];
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showQtySelection, setShowQtySelection] = useState(false);
@@ -317,23 +274,48 @@ const DailyLogActivity = () => {
   };
 
   const handleAddActivity = () => {
-    if (!mainComp || !failType || !actType) return;
+    if (!mainComp || !failType || !actType || selectedReports.length === 0) return;
 
-    const systemMatch = mainComp.match(/\(([^)]+)\)/);
-    const systemStr = systemMatch ? systemMatch[1] : "";
-    const subSystemStr = mainComp.replace(/\s*\([^)]+\)/, "").trim();
-    const docNumber = generateDocNumber(workType);
-    const randomReports = generateRandomReports();
+    let newActivity;
 
-    const newActivity = { 
-      report: [randomReports.laporan],
-      system: systemStr, subSystem: subSystemStr, 
-      failure: failType, action: actType, 
-      docNumber: docNumber, installedParts: [],};
+    if (selectedPM) {
+      const pmData = pmPackages[selectedPM.id];
+
+      const systemMatch = pmData.component.match(/\(([^)]+)\)/);
+      const systemStr = systemMatch ? systemMatch[1] : "";
+      const subSystemStr = pmData.component.replace(/\s*\([^)]+\)/, "").trim();
+
+      newActivity = {
+        report: [...selectedReports],
+        system: systemStr,
+        subSystem: subSystemStr,
+        failure: pmData.failure,
+        action: pmData.action,
+        docNumber: generateDocNumber(workType),
+        installedParts: pmData.parts || [],
+        isPM: true
+      };
+
+    } else {
+      const systemMatch = mainComp.match(/\(([^)]+)\)/);
+      const systemStr = systemMatch ? systemMatch[1] : "";
+      const subSystemStr = mainComp.replace(/\s*\([^)]+\)/, "").trim();
+
+      newActivity = {
+        report: [...selectedReports],
+        system: systemStr,
+        subSystem: subSystemStr,
+        failure: failType,
+        action: actType,
+        docNumber: generateDocNumber(workType),
+        installedParts: [],
+        isPM: false
+      };
+    }
 
     if (editingId !== null) {
        const updated = [...activities]; 
-       updated[editingId] = { ...updated[editingId], ...newActivity }; 
+       updated[editingId] = { ...newActivity, installedParts: updated[editingId].installedParts || [],};
        setActivities(updated); setEditingId(null); 
     }
     else { 
@@ -343,7 +325,7 @@ const DailyLogActivity = () => {
     setMainComp(""); 
     setFailType(""); 
     setActType("");
-    setWorkType("");
+    setSelectedReports([]);
   };
 
   const handleEdit = (index: number) => {
@@ -352,6 +334,7 @@ const DailyLogActivity = () => {
     setMainComp(`${act.subSystem} (${act.system})`); 
     setFailType(act.failure); 
     setActType(act.action);
+    setSelectedReports(act.report);
   };
 
   const handleDeletePart = (activityIndex: number, partIndex: number) => {
@@ -396,8 +379,7 @@ const DailyLogActivity = () => {
           satuan: tempSelectedPart.satuan,
           qty: qtyValue,
           stock: currentMaxStock,
-          needPurchase,
-          inBPB: false
+          needPurchase
         };
       } else {
         updated[targetActivityIndex].installedParts.push({ 
@@ -407,7 +389,6 @@ const DailyLogActivity = () => {
           qty: qtyValue, 
           stock: currentMaxStock,
           needPurchase: needPurchase,
-          inBPB: false,
         }); 
         setTargetPartIndex(null);
       }
@@ -457,7 +438,7 @@ const DailyLogActivity = () => {
           <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
 
             <div className="space-y-3">
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Settings size={16} /> Equipment Details</h3>
+              {/* <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Settings size={16} /> Equipment Details</h3> */}
               
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-sm font-semibold text-slate-600">Location</label>
@@ -472,7 +453,7 @@ const DailyLogActivity = () => {
                 <label className="text-sm font-semibold text-slate-600">Equip Name</label>
                 <select value={equipName} onChange={(e) => handleEquipChange(e.target.value)} 
                 className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                  <option value="">Pilih Alat...</option>
+                  <option value="">Choose Equipment...</option>
                   <option>Reach Stacker</option>
                   <option>Trailer</option>
                   <option>Forklift</option>
@@ -489,8 +470,8 @@ const DailyLogActivity = () => {
                 <div 
                 className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-600 cursor-pointer 
                 hover:border-blue-400 transition-colors min-h-[38px] flex items-center flex-wrap gap-1">
-                  {combinedReports.length > 0 ? (
-                    combinedReports.map((id) => (
+                  {autoReports.length > 0 ? (
+                    autoReports.map((id) => (
                       <span key={id} className={`px-1.5 py-0.5 rounded text-[10px] font-bold border
                         ${id.startsWith("PM")
                           ? "bg-green-100 border-green-200 text-green-700"
@@ -508,10 +489,7 @@ const DailyLogActivity = () => {
                   )}
                 </div>
               </div>
-            </div>
 
-            <div className="space-y-4">
-              <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Clock size={16} /> Operational Data</h3>
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-sm font-semibold text-slate-600">Activity Type</label>
                 <select className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
@@ -520,6 +498,10 @@ const DailyLogActivity = () => {
                   <option>05. PM 250</option>
                 </select>
               </div>
+            </div>
+
+            <div className="space-y-3">
+              {/* <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Clock size={16} /> Operational Data</h3> */}
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-sm font-semibold text-slate-600">HMU</label>
                 <input type="number" placeholder="0.0" className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
@@ -626,7 +608,7 @@ const DailyLogActivity = () => {
               )}
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
               <input list="unified-master" value={mainComp} onChange={(e) => setMainComp(e.target.value)} placeholder="Main Component..."
                 className="border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"/>
 
@@ -635,6 +617,26 @@ const DailyLogActivity = () => {
 
               <input list="action-types" value={actType} onChange={(e) => setActType(e.target.value)} placeholder="Action Type..."
                 className="border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none"/>
+
+              <div onClick={() => setIsLaporanModalOpen(true)}
+                className="bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-600 cursor-pointer 
+                hover:border-blue-400 transition-colors min-h-[38px] flex gap-0.5 items-center">
+                {selectedReports.length > 0 ? (
+                  selectedReports.map((item) => (
+                    <span key={item.id} className={`px-1 py-0.5 rounded text-[10px] font-bold border
+                        ${item.type === "pm"
+                          ? "bg-green-100 border-green-200 text-green-700"
+                          : "bg-blue-100 border-blue-200 text-blue-700"
+                        }`}>
+                      {item.id}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-slate-400">
+                    Select Laporan...
+                  </span>
+                )}
+              </div>
             </div>
           </div>
           
@@ -668,7 +670,7 @@ const DailyLogActivity = () => {
             <table className="w-full text-left text-sm border-collapse">
               <thead className="bg-[#005a32] text-white font-bold border-y border-slate-200 tracking-tighter">
                 <tr className=''>
-                  <th className="px-2 py-3 text-center uppercase">Report</th>
+                  <th className="px-2 py-3 text-center uppercase">Report ID</th>
                   <th className="px-2 py-3 text-center uppercase">System</th>
                   {/* <th className="px-6 py-3 uppercase">Sub-system</th> */}
                   <th className="px-2 py-3 text-center uppercase">Failure Type</th>
@@ -689,13 +691,19 @@ const DailyLogActivity = () => {
             </tr>) : (activities.map((act, index) => (
               <tr key={index} className="border-b border-slate-100 hover:bg-slate-50 transition-colors divide-x divide-slate-300">
                 <td className='px-2 py-4'>
-                  {act.report.map((id: string) => (
-                      <span
-                        key={id}
-                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold border bg-blue-100 border-blue-200 text-blue-700`}>
-                        {id}
-                      </span>
+                  <div className='flex flex-col gap-1'>
+                    {act.report.map((item: any) => (
+                      <span key={item.id} onClick={() => handleOpenReportDetail(item.id)} 
+                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold border text-center cursor-pointer
+                        ${item.type === "pm"
+                          ? "bg-green-100 border-green-200 text-green-700"
+                          : "bg-blue-100 border-blue-200 text-blue-700"
+                        }`}>
+                      {item.id}
+                    </span>
                     ))}
+                  </div>
+                  
                 </td>
                 <td className="px-2 py-4 text-blue-800">
                   <div className='flex flex-col gap-1'>
@@ -730,14 +738,16 @@ const DailyLogActivity = () => {
                       <span>{p.qty} {p.satuan} </span>
 
                       <div className='flex gap-1'>
-                        <button onClick={() => {setTargetActivityIndex(index);
+                        <button disabled={act.isPM} onClick={() => {setTargetActivityIndex(index);
                           setTargetPartIndex(i); setTempSelectedPart(p);
                           setQtyValue(p.qty); setCurrentMaxStock(p.stock);
-                          setShowQtySelection(true); setIsModalOpen(true)}} className='bg-green-500 flex justify-center py-1 w-5 rounded'>
+                          setShowQtySelection(true); setIsModalOpen(true)}} 
+                          className={`flex justify-center py-1 w-5 rounded ${act.isPM ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-green-500"}`} >
                           <Edit size={18} className='text-white'/>
                         </button>
 
-                        <button onClick={() => handleDeletePart(index, i)} className='bg-red-500 flex justify-center py-1 w-5 rounded'>
+                        <button disabled={act.isPM} onClick={() => handleDeletePart(index, i)} 
+                        className={`flex justify-center py-1 w-5 rounded ${act.isPM ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-red-500"}`}>
                           <X size={18} className='text-white'/>
                         </button>
                       </div>
@@ -746,13 +756,13 @@ const DailyLogActivity = () => {
                 </td>
                 <td className="px-2 py-4">
                   <div className="flex flex-col gap-1 items-center">
-                    <button onClick={() => {setTargetActivityIndex(index); setIsModalOpen(true); }}
-                        className="bg-blue-600 text-white px-3 py-1 w-20 rounded text-[10px]">
+                    <button disabled={act.isPM} onClick={() => {setTargetActivityIndex(index); setIsModalOpen(true); }}
+                        className={`px-3 py-1 w-20 text-[10px] rounded ${act.isPM ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-blue-600 text-white"}`}>
                         ADD PARTS
                       </button>
 
-                    <button disabled={lockedRows.includes(index)} onClick={() => handleEdit(index)} 
-                      className={`px-3 py-1 rounded text-[10px] w-20 ${lockedRows.includes(index) ? "bg-gray-300 cursor-not-allowed" : "bg-green-500 text-white"}`}>
+                    <button disabled={lockedRows.includes(index) || act.isPM} onClick={() => handleEdit(index)} 
+                      className={`px-3 py-1 rounded text-[10px] w-20 ${lockedRows.includes(index) || act.isPM ? "bg-gray-300 text-gray-600 cursor-not-allowed" : "bg-green-500 text-white"}`}>
                         EDIT
                     </button>
 
@@ -768,62 +778,7 @@ const DailyLogActivity = () => {
           </div>
         </div>
 
-        {/* <div className="bg-white rounded-xl shadow-sm border border-slate-200 mt-8 overflow-hidden">
-          <div className="bg-[#005a32] p-3 px-6">
-            <h3 className="text-xs font-bold text-white uppercase tracking-widest">
-              BPB LIST
-            </h3>
-          </div>
-
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm border-collapse">
-              <thead className="bg-slate-100 text-slate-600 font-bold">
-                <tr>
-                  <th className="px-4 py-3">No BPB</th>
-                  <th className="px-4 py-3">Part</th>
-                  <th className="px-4 py-3">Qty</th>
-                  <th className="px-4 py-3">Activity</th>
-                  <th className="px-4 py-3">Target</th>
-                  <th className="px-4 py-3">SPK</th>
-                </tr>
-              </thead>
-
-              <tbody>
-                {bpbList.length === 0 ? (
-                  <tr>
-                    <td colSpan={6} className="text-center py-6 text-slate-400 italic">
-                      No BPB data yet
-                    </td>
-                  </tr>
-                ) : (
-                  bpbList.map((item, index) => (
-                    <tr key={index} className="border-b hover:bg-slate-50">
-                      <td className="px-4 py-3 font-mono text-blue-700">{item.noBPB}</td>
-                      <td className="px-4 py-3">{item.part}</td>
-                      <td className="px-4 py-3 font-bold">{item.qty}</td>
-                      <td className="px-4 py-3 text-xs">{item.activity}</td>
-                      <td className="px-4 py-3">
-                        <span className={`px-2 py-1 rounded text-xs font-bold
-                          ${item.target === "SELF"
-                            ? "bg-gray-100 text-gray-600"
-                            : item.target.startsWith("LOKB")
-                            ? "bg-blue-100 text-blue-700"
-                            : "bg-orange-100 text-orange-700"
-                          }`}>
-                          {item.target}
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-green-700 font-mono">{item.spk}</td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div> */}
-
         <div className="flex gap-3 justify-end items-center">
-          <button onClick={generateBPBPreview} className="px-6 py-2.5 rounded-lg text-sm font-bold bg-green-600 text-white hover:bg-green-700">Generate BPB</button>
           <button className="px-6 py-2.5 rounded-lg text-white text-sm font-bold bg-red-500 hover:bg-red-600 transition-colors flex items-center gap-2"><X size={18} /> CANCEL</button>
           <button className="px-6 py-2.5 rounded-lg text-sm font-bold bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 transition-colors">SAVE & CLOSE</button>
           <button className="px-8 py-2.5 rounded-lg text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200 flex items-center gap-2"><Save size={18} /> SAVE ALL</button>
@@ -833,42 +788,271 @@ const DailyLogActivity = () => {
       {/* --- LAPORAN POPUP MODAL --- */}
       {isLaporanModalOpen && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
-          <div className="bg-white rounded-lg shadow-2xl w-full max-w-3xl overflow-hidden border-2 border-blue-600 animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-lg shadow-2xl w-full max-w-5xl max-h-[100vh] flex flex-col border-2 border-blue-600">
             <div className="p-4 bg-blue-600 text-white flex justify-between items-center">
               <h2 className="font-bold uppercase tracking-tight flex items-center gap-2"><FileText size={18} /> Pilih No. Laporan</h2>
               <button onClick={() => setIsLaporanModalOpen(false)} className="hover:bg-blue-700 rounded-full p-1"><X size={20} /></button>
             </div>
-            <div className="overflow-x-auto max-h-[400px]">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
-                  <tr>
-                    <th className="px-4 py-3 text-center w-12">Select</th>
-                    <th className="px-10 py-3">No. Laporan</th>
-                    <th className="px-10 py-3">Tanggal Laporan</th>
-                    <th className="px-4 py-3">Pelapor</th>
-                    <th className="px-4 py-3">Kategori</th>
-                    <th className="px-4 py-3">Detail Laporan</th>
-                    <th className="px-10 py-3">Keterangan Mekanik</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {laporanMasterList.map((lap) => (
-                    <tr key={lap.id} onClick={() => toggleLaporanSelection(lap.id)} className={`cursor-pointer hover:bg-blue-50 transition-colors ${selectedLaporan.includes(lap.id) ? 'bg-blue-50/50' : ''}`}>
-                      <td className="px-4 py-3 text-center">{selectedLaporan.includes(lap.id) ? <CheckSquare size={18} className="text-blue-600 mx-auto" /> : <Square size={18} className="text-slate-300 mx-auto" />}</td>
-                      <td className="px-4 py-3 font-bold text-blue-700">{lap.id}</td>
-                      <td className="px-4 py-3 font-medium">{lap.date}</td>
-                      <td className="px-4 py-3 text-red-600 font-bold">{lap.reporter}</td>
-                      <td className="px-4 py-3">{lap.category}</td>
-                      <td className="px-4 py-3">{lap.details}</td>
-                      <td className="px-4 py-3">{lap.notes}</td>
+
+            {/* Laporan Breakdown Table */}
+            <div className="border-t border-slate-200">
+              <div className="p-3 bg-slate-50 font-bold text-xs uppercase tracking-wider text-slate-500">
+                Laporan Breakdown
+              </div>
+
+              <div className="overflow-auto max-h-[200px]">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                    <tr>
+                      <th className="px-4 py-3 text-center w-12">Select</th>
+                      <th className="px-4 py-3">No. Laporan</th>
+                      <th className="px-4 py-3">Tanggal Laporan</th>
+                      <th className="px-4 py-3">Pelapor</th>
+                      <th className="px-4 py-3">Downtime</th>
+                      <th className="px-4 py-3">Detail Laporan</th>
+                      <th className="px-4 py-3 text-center">Doc</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {laporanBreakdownList.map((lb) => (
+                      <tr
+                        key={lb.id}
+                        onClick={() => toggleReportSelection(lb, "laporan")}
+                        className={`cursor-pointer hover:bg-blue-50 transition-colors ${
+                          selectedReports.some(r => r.id === lb.id && r.type === "laporan") ? 'bg-blue-50/50' : ''
+                        }`}>
+                        <td className="px-4 py-3 text-center">
+                          {selectedReports.some(r => r.id === lb.id && r.type === "laporan")
+                            ? <CheckSquare size={18} className="text-blue-600 mx-auto" />
+                            : <Square size={18} className="text-slate-300 mx-auto" />
+                          }
+                        </td>
+                        <td className="px-4 py-3 font-bold text-blue-700">{lb.id}</td>
+                        <td className="px-4 py-3">{lb.date}</td>
+                        <td className="px-4 py-3 text-red-600 font-bold">{lb.reporter}</td>
+                        <td className="px-4 py-3">{lb.downtime}</td>
+                        <td className="px-4 py-3">{lb.details}</td>
+                        <td className="px-4 py-3 text-center">
+                          <button onClick={(e) => { e.stopPropagation(); openDocumentation(lb);}}
+                            className="bg-blue-500 text-white px-2 py-1 rounded text-[10px] hover:bg-blue-700 transition-colors">
+                            Lihat
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
             </div>
+
+            {/* Laporan Table */}
+            <div className="border-t border-slate-200">
+              <div className="p-3 bg-slate-50 font-bold text-xs uppercase tracking-wider text-slate-500">
+                  Laporan Mekanik
+                </div>
+              <div className="overflow-auto max-h-[150px]">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                    <tr>
+                      <th className="px-4 py-3 text-center w-12">Select</th>
+                      <th className="px-4 py-3">No. Laporan</th>
+                      <th className="px-4 py-3">Tanggal Laporan</th>
+                      <th className="px-4 py-3">Pelapor</th>
+                      <th className="px-4 py-3">Detail Laporan</th>
+                      <th className="px-4 py-3 text-center">Keterangan Pre-Check</th>
+                      <th className="px-4 py-3 text-center">Doc</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {laporanMekanikList.map((lap) => (
+                      <tr key={lap.id} onClick={() => toggleReportSelection(lap, "laporan")} className={`cursor-pointer hover:bg-blue-50 transition-colors ${selectedReports.some(r => r.id === lap.id && r.type === "laporan") ? 'bg-blue-50/50' : ''}`}>
+                        <td className="px-4 py-3 text-center">{selectedReports.some(r => r.id === lap.id && r.type === "laporan") ? <CheckSquare size={18} className="text-blue-600 mx-auto" /> : <Square size={18} className="text-slate-300 mx-auto" />}</td>
+                        <td className="px-4 py-3 font-bold text-blue-700">{lap.id}</td>
+                        <td className="px-4 py-3 font-medium">{lap.date}</td>
+                        <td className="px-4 py-3 text-red-600 font-bold">{lap.reporter}</td>
+                        <td className="px-4 py-3">{lap.details}</td>
+                        <td className="px-4 py-3">{lap.notes}</td>
+                        <td className="px-4 py-3 text-center">
+                          <button onClick={(e) => { e.stopPropagation(); openDocumentation(lap);}}
+                            className="bg-blue-500 text-white px-2 py-1 rounded text-[10px] hover:bg-blue-700 transition-colors">
+                            Lihat
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Preventive Maintenance Table */}
+            <div className="border-t border-slate-200">
+              <div className="p-3 bg-slate-50 font-bold text-xs uppercase tracking-wider text-slate-500">
+                Preventive Maintenance
+              </div>
+
+              <div className="overflow-auto max-h-[200px]">
+                <table className="w-full text-left text-xs border-collapse">
+                  <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
+                    <tr>
+                      <th className="px-4 py-3 text-center w-12">Select</th>
+                      <th className="px-4 py-3">PM Type</th>
+                      <th className="px-4 py-3">Current HM</th>
+                      <th className="px-4 py-3">HM Target</th>
+                      <th className="px-4 py-3">AVG HM / Day</th>
+                      <th className="px-4 py-3">Date Prediction</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {pmMasterList.map((pm) => (
+                      <tr
+                        key={pm.id}
+                        onClick={() => toggleReportSelection(pm, "pm")}
+                        className={`cursor-pointer hover:bg-blue-50 transition-colors ${
+                          selectedReports.some(r => r.id === pm.id && r.type === "pm") ? 'bg-blue-50/50' : ''
+                        }`}>
+                        <td className="px-4 py-3 text-center">
+                          {selectedReports.some(r => r.id === pm.id && r.type === "pm")
+                            ? <CheckSquare size={18} className="text-blue-600 mx-auto" />
+                            : <Square size={18} className="text-slate-300 mx-auto" />
+                          }
+                        </td>
+                        <td className="px-4 py-3 font-bold text-blue-700">{pm.id}</td>
+                        <td className="px-4 py-3">{pm.currentHM}</td>
+                        <td className="px-4 py-3">{pm.hmTarget}</td>
+                        <td className="px-4 py-3">{pm.avgHM}</td>
+                        <td className="px-4 py-3">{pm.datePrediction}</td>  
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+            </div>
+
             <div className="p-4 bg-slate-50 border-t border-slate-200 flex justify-end gap-3">
               <button onClick={() => setIsLaporanModalOpen(false)} className="px-6 py-2 bg-blue-600 text-white rounded text-[10px] font-bold uppercase tracking-widest hover:bg-blue-700 shadow-md">Confirm Selection</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Popup Report ID */}
+      {isReportDetailOpen && selectedReportDetail && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-[500px] shadow-xl">
+
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="font-bold text-lg text-blue-700">
+                {selectedReportDetail.id}
+              </h2>
+              <button onClick={() => setIsReportDetailOpen(false)}>
+                <X />
+              </button>
+            </div>
+
+            <div className="text-sm space-y-2">
+
+              {/* ===== LAPORAN UMUM ===== */}
+              {selectedReportDetail.type === "laporan" && (
+                <>
+                  <p><b>Tanggal:</b> {selectedReportDetail.date}</p>
+                  <p><b>Pelapor:</b> {selectedReportDetail.reporter}</p>
+                  <p><b>Kategori:</b> {selectedReportDetail.category}</p>
+                  <p><b>Detail:</b> {selectedReportDetail.details}</p>
+                  <p><b>Catatan:</b> {selectedReportDetail.notes || "-"}</p>
+                </>
+              )}
+
+              {/* ===== BREAKDOWN ===== */}
+              {selectedReportDetail.type === "breakdown" && (
+                <>
+                  <p><b>Tanggal:</b> {selectedReportDetail.date}</p>
+                  <p><b>Pelapor:</b> {selectedReportDetail.reporter}</p>
+                  <p><b>Downtime:</b> {selectedReportDetail.downtime}</p>
+                  <p><b>Detail:</b> {selectedReportDetail.details}</p>
+                </>
+              )}
+
+              {/* ===== MEKANIK ===== */}
+              {selectedReportDetail.type === "mekanik" && (
+                <>
+                  <p><b>Tanggal:</b> {selectedReportDetail.date}</p>
+                  <p><b>Pelapor:</b> {selectedReportDetail.reporter}</p>
+                  <p><b>Detail:</b> {selectedReportDetail.details}</p>
+                  <p><b>Notes:</b> {selectedReportDetail.notes || "-"}</p>
+                </>
+              )}
+
+              {/* ===== PM ===== */}
+              {selectedReportDetail.type === "pm" && (
+                <>
+                  <p><b>PM Type:</b> {selectedReportDetail.id}</p>
+                  <p><b>Current HM:</b> {selectedReportDetail.currentHM}</p>
+                  <p><b>HM Target:</b> {selectedReportDetail.hmTarget}</p>
+                  <p><b>AVG HM / Day:</b> {selectedReportDetail.avgHM}</p>
+                  <p><b>Prediction:</b> {selectedReportDetail.datePrediction}</p>
+                </>
+              )}
+
+            </div>
+
+          </div>
+        </div>
+      )}
+
+      {/* Documentation Modals */}
+      {isDocOpen && selectedDoc && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[70]">
+          <div className="bg-white w-[600px] rounded-lg shadow-xl overflow-hidden">
+            
+            <div className="bg-slate-900 text-white p-4 flex justify-between items-center">
+              <h2 className="font-bold text-sm">Documentation</h2>
+              <button className='bg-slate-600 hover:bg-slate-700 rounded-lg p-1' onClick={() => setIsDocOpen(false)}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div className="p-5 text-sm space-y-3">
+              <div>
+                <span className="font-bold">No Laporan:</span> {selectedDoc.id}
+              </div>
+
+              <div>
+                <span className="font-bold">Tanggal:</span> {selectedDoc.date}
+              </div>
+
+              <div>
+                <span className="font-bold">Pelapor:</span> {selectedDoc.reporter}
+              </div>
+
+              <div>
+                <span className="font-bold">Detail:</span> {selectedDoc.details}
+              </div>
+
+              {/* khusus breakdown */}
+              {selectedDoc.downtime && (
+                <div>
+                  <span className="font-bold">Downtime:</span> {selectedDoc.downtime}
+                </div>
+              )}
+
+              {/* khusus mekanik */}
+              {selectedDoc.notes && (
+                <div>
+                  <span className="font-bold">Notes:</span> {selectedDoc.notes}
+                </div>
+              )}
+
+            </div>
+
+            <div className="p-4 bg-slate-50 flex justify-end">
+              <button onClick={() => setIsDocOpen(false)} className="px-4 py-2 bg-blue-500 text-white rounded text-xs hover:bg-blue-700 transition-colors">
+                Close
+              </button>
+            </div>
+
           </div>
         </div>
       )}
@@ -895,26 +1079,27 @@ const DailyLogActivity = () => {
                       className="w-full border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none"/>
                   </div>
                   <div className="bg-[#005a32] text-white p-3 font-bold text-xs uppercase 
-                  grid grid-cols-[1.5fr_2.5fr_2.5fr_1.5fr_1.5fr_1fr_0.7fr_0.8fr] gap-2">
-                    <span>Kode Barang</span>
-                    <span>Nama Barang</span>
-                    <span>Nama Barang Lapangan</span>
-                    <span>Kode Kategori</span>
-                    <span>Kategori Barang</span>
-                    <span>Satuan</span>
+                  grid grid-cols-[1.5fr_2.5fr_2.5fr_1.5fr_1.5fr_1fr_0.7fr_0.8fr_0.8fr] gap-2">
+                    <span>Part Code</span>
+                    <span>Part Name</span>
+                    <span>Part Field Name</span>
+                    <span>Category Code</span>
+                    <span>Part Category</span>
+                    <span>Unit</span>
+                    <span>Status</span>
                     <span className="text-center">Stock</span>
                     <span className="text-center">Action</span>
                   </div>
                   <div className="max-h-96 overflow-y-auto">
                     {filteredParts.map((item, idx) => (
-                    <div key={idx} className="p-4 grid grid-cols-[1.5fr_2.5fr_2.5fr_1.5fr_1.5fr_1fr_0.7fr_0.8fr]
-                    gap-2 items-center border-b border-slate-50 hover:bg-slate-50 transition-colors">
+                    <div key={idx} className="p-3 grid grid-cols-[1.5fr_2.5fr_2.5fr_1.5fr_1.5fr_1fr_0.7fr_0.8fr_0.8fr] gap-2 items-center border-b border-slate-50 hover:bg-slate-50 transition-colors">
                       <span className="text-sm font-medium text-slate-700">{item.code}</span>
                       <span className="text-sm font-medium text-slate-700">{item.name}</span>
                       <span className="text-sm font-medium text-slate-700">{item.field_name}</span>
                       <span className="text-sm font-medium text-slate-700">{item.category_code}</span>
                       <span className="text-sm font-medium text-slate-700">{item.category}</span>
                       <span className="text-sm font-medium text-slate-700">{item.satuan}</span>
+                      <span className="text-sm font-medium text-slate-700">{item.status}</span>
                       <span className={`text-xs font-black text-center ${item.stock < 10 ? 'text-red-600' : 'text-slate-500'}`}>{item.stock}</span>
                       <div className="text-right">
                         <button onClick={() => initiateQtySelection(item)} className="bg-[#005a32] hover:bg-green-800 text-white px-4 py-1.5 rounded text-[10px] font-bold uppercase tracking-tighter shadow-sm">SELECT</button>
@@ -952,10 +1137,6 @@ const DailyLogActivity = () => {
                         <Plus size={24} strokeWidth={3}/>
                       </button>
                     </div>{qtyValue >= currentMaxStock && (<p className="text-[9px] text-red-500 font-bold uppercase flex items-center justify-center gap-1"><AlertCircle size={10} /> Maximum stock reached</p>)}
-                    {/* <div className="flex items-center justify-center gap-2 mt-5">
-                      <input type="checkbox" id="refurbished" checked={isRefurbished} onChange={(e) => setIsRefurbished(e.target.checked)} className='form-checkbox h-5 w-5 text-blue-600'/>
-                      <label htmlFor="refurbished" className="text-lg font-medium text-slate-700">Refurbished</label>
-                    </div> */}
                   </div>
 
                   <div className="flex gap-3 pt-4">
@@ -967,53 +1148,6 @@ const DailyLogActivity = () => {
           </div>
         </div>
       )}
-
-      {/* --- BPB PREVIEW MODAL -- */}
-      {isBPBModalOpen && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-lg w-[700px]">
-
-            <div className="mb-4">
-              <div>No BPB : {generatedBPB ?? "-"}</div>
-              <div>BPB Created On : {new Date().toLocaleDateString()}</div>
-            </div>
-
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b">
-                  <th>Nama Barang</th>
-                  <th>Jumlah</th>
-                  <th>Keterangan</th>
-                  <th>Ajukan Pengadaan</th>
-                </tr>
-              </thead>
-
-              <tbody>
-              {bpbSelections.map((row, i)=>(
-                <tr key={i} className="border-b">
-                  <td>{row.name}</td>
-                  <td>{row.qty}</td>
-                  <td>{row.keterangan}</td>
-                  <td className="text-center">
-                    {row.inBPB ? (
-                      <span className="text-xs text-gray-400 italic">Processed</span>) 
-                      : (
-                      <input type="checkbox" checked={row.checked} onChange={() => toggleBPBCheckbox(i)}/>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              </tbody>
-            </table>
-
-            <div className="flex justify-end mt-4 gap-3">
-              <button onClick={()=>setIsBPBModalOpen(false)} className="px-5 py-2 bg-gray-300 rounded">Cancel</button>
-              <button onClick={saveBPB} className="px-5 py-2 bg-blue-600 text-white rounded">Simpan</button>
-            </div>
-
-          </div>
-        </div>
-        )}
     </div>
   );
 };
