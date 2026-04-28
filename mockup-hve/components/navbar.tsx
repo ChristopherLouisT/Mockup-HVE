@@ -68,14 +68,13 @@ const Navbar = () => {
         const val = e.target.value;
 
         if (val === "spk") router.push("/spk");
-        if (val === "dailylog") router.push("/");
         if (val === "fuel") router.push("/fuel");
+        if (val === "transaction") router.push("/");
         if (val === "oil") router.push("/oil");
         if (val === "monitoring") router.push("/monitoring");
       }}>
-        <option>TRANSAKSI</option>
+        <option value="transaction">TRANSAKSI</option>
         <option value="spk">Create SPK</option>
-        <option value="dailylog">Daily Log</option>
       </select>
 
       <select className="bg-[#0b6b3a] text-white px-3 py-1 text-xs font-bold">
