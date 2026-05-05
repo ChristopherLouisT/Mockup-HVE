@@ -46,6 +46,7 @@ const MonitoringPage = () => {
         if (val === "monitoring") router.push("/monitoring");
       }}>
         <option value="transaction">TRANSAKSI</option>
+        <option value="mutasi">MUTASI SPAREPART</option>
         <option value="spk">Create SPK</option>
       </select>
 

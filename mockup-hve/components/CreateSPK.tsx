@@ -15,13 +15,13 @@ const CreateSPK = () => {
   const [isDocOpen, setIsDocOpen] = useState(false);
   const [selectedDoc, setSelectedDoc] = useState<any>(null);
 
-  const laporanBreakdownList = [
-    { id: "LOG-2026-001", date: "2026-10-03", downtime: "2026-10-02 16:42", reporter: "Bowo", details: "Alat tidak bisa nyala"},
-  ];
-  const laporanMekanikList = [
-    { id: "LOG-2026-002", date: "2026-10-02", reporter: "Joko", details: "Perbaikan rutin", notes: "[2026/10/04 - Toni] Diperbaiki pada next PM" },
-    { id: "LOG-2026-005", date: "2026-10-05", reporter: "Vin", details: "Oli netes dari engine", notes: "[2026/10/07 - Toni] Perlu rutin tambah oli, perbaikan pada next PM" }
-  ];
+  const [laporanBreakdownList, setLaporanBreakdownList] = useState([
+    { id: "LOG-2026-001", date: "2026-10-03", downtime: "2026-10-02 16:42", reporter: "Bowo", details: "Alat tidak bisa nyala", status: "true",},
+  ]);
+  const [laporanMekanikList, setLaporanMekanikList] = useState([
+    { id: "LOG-2026-002", date: "2026-10-02", reporter: "Joko", details: "Perbaikan rutin", status: "false", notes: "[2026/10/04 - Toni] Diperbaiki pada next PM" },
+    { id: "LOG-2026-005", date: "2026-10-05", reporter: "Vin", details: "Oli netes dari engine", status: "true", notes: "[2026/10/07 - Toni] Perlu rutin tambah oli, perbaikan pada next PM" }
+  ]);
   const pmMasterList = [
     { id: "PM-500", currentHM: 490, hmTarget: "487 - 587", avgHM: 14, datePrediction: "17 March 2026 - 24 March 2026"}
   ];
@@ -62,6 +62,28 @@ const CreateSPK = () => {
       setNoSPK(`SPK-${new Date().getFullYear()}-${random.toString().padStart(3,'0')}`);
     } else {
       setNoSPK("");
+    }
+  };
+
+  const toggleStatus = (id: string, type: "breakdown" | "mekanik") => {
+    if (type === "breakdown") {
+      setLaporanBreakdownList(prev =>
+        prev.map(item =>
+          item.id === id
+            ? { ...item, status: item.status === "true" ? "false" : "true" }
+            : item
+        )
+      );
+    }
+
+    if (type === "mekanik") {
+      setLaporanMekanikList(prev =>
+        prev.map(item =>
+          item.id === id
+            ? { ...item, status: item.status === "true" ? "false" : "true" }
+            : item
+        )
+      );
     }
   };
 
@@ -297,7 +319,6 @@ const CreateSPK = () => {
             <button className="mt-3 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider shadow-sm"
               onClick={() => {
                 alert("SPK Saved");
-                router.push("/");
               }}>
               <Save size={14}/>Save SPK
             </button>
@@ -331,6 +352,7 @@ const CreateSPK = () => {
                       <th className="px-4 py-3 w-[120px]">Pelapor</th>
                       <th className="px-4 py-3 w-[140px]">Downtime</th>
                       <th className="px-4 py-3">Detail Laporan</th>
+                      <th className="px-4 py-3 w-[60px]">Status</th>
                       <th className="px-4 py-3 text-center w-[80px]">Doc</th>
                       <th className="px-4 py-3 text-center w-[60px]">Select</th>
                     </tr>
@@ -348,6 +370,15 @@ const CreateSPK = () => {
                         <td className="px-4 py-3 text-red-600 font-bold">{lb.reporter}</td>
                         <td className="px-4 py-3">{lb.downtime}</td>
                         <td className="px-4 py-3">{lb.details}</td>
+                        <td className="px-4 py-3">
+                          <span onClick={(e) => {e.stopPropagation(); toggleStatus(lb.id, "breakdown");}}
+                            className={`px-2 py-1 text-[10px] font-bold rounded-full cursor-pointer transition
+                              ${lb.status === "true"
+                                ? "bg-green-100 text-green-700 hover:bg-green-200"
+                                : "bg-red-100 text-red-700 hover:bg-red-200"}`}>
+                            {lb.status === "true" ? "VALID" : "FALSE"}
+                          </span>
+                        </td>
                         <td className="px-4 py-3 text-center">
                           <button onClick={(e) => { e.stopPropagation(); openDocumentation(lb);}}
                             className="bg-blue-500 text-white px-2 py-1 rounded text-[10px] hover:bg-blue-700 transition-colors">
@@ -355,10 +386,13 @@ const CreateSPK = () => {
                           </button>
                         </td>
                         <td className="px-4 py-3 text-center">
-                          {selectedLaporan.includes(lb.id)
-                            ? <CheckSquare size={18} className="text-blue-600 mx-auto" />
-                            : <Square size={18} className="text-slate-300 mx-auto" />
-                          }
+                          {lb.status === "true" ? (
+                            selectedLaporan.includes(lb.id)
+                              ? <CheckSquare size={18} className="text-blue-600 mx-auto" />
+                              : <Square size={18} className="text-slate-400 mx-auto" />
+                          ) : (
+                            <Square size={18} className="text-slate-100 mx-auto" />
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -372,7 +406,7 @@ const CreateSPK = () => {
               <div className="p-3 bg-slate-50 font-bold text-xs uppercase tracking-wider text-slate-500">
                   Laporan Mekanik
                 </div>
-              <div className="overflow-auto max-h-[150px]">
+              <div className="overflow-auto max-h-[200px]">
                 <table className="w-full table-fixed text-left text-xs border-collapse">
                   <thead className="bg-slate-100 text-slate-600 font-bold border-b border-slate-200">
                     <tr>
@@ -381,25 +415,48 @@ const CreateSPK = () => {
                       <th className="px-4 py-3 w-[120px]">Pelapor</th>
                       <th className="px-4 py-3 w-[140px]">Detail Laporan</th>
                       <th className="px-4 py-3">Keterangan Pre-Check</th>
+                      <th className="px-4 py-3 w-[60px]">Status</th>
                       <th className="px-4 py-3 text-center w-[80px]">Doc</th>
                       <th className="px-4 py-3 text-center w-[60px]">Select</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     {laporanMekanikList.map((lap) => (
-                      <tr key={lap.id} onClick={() => toggleLaporanSelection(lap.id)} className={`cursor-pointer hover:bg-blue-50 transition-colors ${selectedLaporan.includes(lap.id) ? 'bg-blue-50/50' : ''}`}>
+                      <tr key={lap.id} onClick={() => {
+                          if (lap.status === "true") {toggleLaporanSelection(lap.id);}
+                        }}
+                        className={`cursor-pointer transition-colors ${
+                          lap.status === "true" ? 'hover:bg-blue-50' : 'bg-slate-100 cursor-not-allowed opacity-60'
+                        } ${selectedLaporan.includes(lap.id) ? 'bg-blue-50/50' : ''}`}>
                         <td className="px-4 py-3 font-bold text-blue-700">{lap.id}</td>
                         <td className="px-4 py-3 font-medium">{lap.date}</td>
                         <td className="px-4 py-3 text-red-600 font-bold">{lap.reporter}</td>
                         <td className="px-4 py-3">{lap.details}</td>
                         <td className="px-4 py-3">{lap.notes}</td>
+                        <td className="px-4 py-3">
+                          <span onClick={(e) => {e.stopPropagation(); toggleStatus(lap.id, "mekanik");}}
+                            className={`px-2 py-1 text-[10px] font-bold rounded-full cursor-pointer transition
+                              ${lap.status === "true"
+                                ? "bg-green-100 text-green-700 hover:bg-green-200"
+                                : "bg-red-100 text-red-700 hover:bg-red-200"}`}>
+                            {lap.status === "true" ? "VALID" : "FALSE"}
+                          </span>
+                        </td>
                         <td className="px-4 py-3 text-center">
                           <button onClick={(e) => { e.stopPropagation(); openDocumentation(lap);}}
                             className="bg-blue-500 text-white px-2 py-1 rounded text-[10px] hover:bg-blue-700 transition-colors">
                             Lihat
                           </button>
                         </td>
-                        <td className="px-4 py-3 text-center">{selectedLaporan.includes(lap.id) ? <CheckSquare size={18} className="text-blue-600 mx-auto" /> : <Square size={18} className="text-slate-300 mx-auto" />}</td>
+                        <td className="px-4 py-3 text-center">
+                          {lap.status === "true" ? (
+                            selectedLaporan.includes(lap.id)
+                              ? <CheckSquare size={18} className="text-blue-600 mx-auto" />
+                              : <Square size={18} className="text-slate-400 mx-auto" />
+                          ) : (
+                            <Square size={18} className="text-slate-100 mx-auto" />
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

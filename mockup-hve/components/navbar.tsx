@@ -70,10 +70,12 @@ const Navbar = () => {
         if (val === "spk") router.push("/spk");
         if (val === "fuel") router.push("/fuel");
         if (val === "transaction") router.push("/");
+        if (val === "mutasi") router.push("/mutasi");
         if (val === "oil") router.push("/oil");
         if (val === "monitoring") router.push("/monitoring");
       }}>
         <option value="transaction">TRANSAKSI</option>
+        <option value="mutasi">Mutasi Sparepart</option>
         <option value="spk">Create SPK</option>
       </select>
 
