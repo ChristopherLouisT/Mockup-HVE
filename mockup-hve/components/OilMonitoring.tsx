@@ -234,7 +234,7 @@ const OilMonitoring = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-2">
           <div>
             <h2 className="text-2xl font-black flex items-center gap-2 text-slate-800 uppercase tracking-tight">
-              <Droplets className="text-blue-600" size={28} />
+              <Droplets className="text-green-600" size={28} />
               Oil Monitoring
             </h2>
             <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Analytics & Inventory Control</p>
@@ -522,7 +522,7 @@ const OilMonitoring = () => {
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="p-4 px-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
-                  <BarChart3 size={16} /> Monthly Oil Usage Log (OUT)
+                  <BarChart3 size={16} className='text-green-600' /> Monthly Oil Usage Log (OUT)
                 </h3>
                 <div className="flex gap-2">
                   <div className="relative">
@@ -568,7 +568,7 @@ const OilMonitoring = () => {
             <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
               <div className="p-4 px-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <h3 className="text-xs font-black text-slate-600 uppercase tracking-widest flex items-center gap-2">
-                  <BarChart3 size={16} /> Monthly Oil IN Log
+                  <BarChart3 size={16} className="text-green-600" /> Monthly Oil IN Log
                 </h3>
                 <div className="flex gap-2">
                   <div className="relative">

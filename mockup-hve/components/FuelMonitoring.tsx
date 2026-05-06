@@ -234,7 +234,7 @@ const FuelMonitoring = () => {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <h2 className="text-2xl font-black flex items-center gap-2 text-slate-800 uppercase tracking-tight">
-              <Fuel className="text-blue-600" size={28} />
+              <Fuel className="text-green-600" size={28} />
               Fuel Efficiency Analysis
             </h2>
             <p className="text-slate-400 text-xs font-bold uppercase tracking-widest">Compare Performance Metrics</p>
@@ -376,10 +376,10 @@ const FuelMonitoring = () => {
         <div className="grid grid-cols-1 lg:grid-cols-11 gap-4 items-center">
           
           {/* Unit A */}
-          <div className={`lg:col-span-5 p-6 rounded-3xl border-2 transition-all ${unitAWins ? 'bg-blue-50/30 border-blue-500 shadow-xl shadow-blue-100' : 'bg-white border-slate-100 opacity-80'}`}>
+          <div className={`lg:col-span-5 p-6 rounded-3xl border-2 transition-all ${unitAWins ? 'bg-green-50/30 border-green-500 shadow-xl shadow-green-100' : 'bg-white border-slate-100 opacity-80'}`}>
             <div className="flex justify-between items-start mb-6">
               <div>
-                <span className={`text-[9px] font-black px-2 py-1 rounded uppercase ${unitAWins ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>Unit A</span>
+                <span className={`text-[9px] font-black px-2 py-1 rounded uppercase ${unitAWins ? 'bg-green-600 text-white' : 'bg-slate-200 text-slate-500'}`}>Unit A</span>
                 <select value={unitA} onChange={(e) => setUnitA(e.target.value)}
                   className="block mt-2 text-xl font-black bg-transparent outline-none cursor-pointer">
                   {filteredFleet
@@ -421,10 +421,10 @@ const FuelMonitoring = () => {
           </div>
 
           {/* Unit B */}
-          <div className={`lg:col-span-5 p-6 rounded-3xl border-2 transition-all ${!unitAWins ? 'bg-blue-50/30 border-blue-500 shadow-xl shadow-blue-100' : 'bg-white border-slate-100 opacity-80'}`}>
+          <div className={`lg:col-span-5 p-6 rounded-3xl border-2 transition-all ${!unitAWins ? 'bg-green-50/30 border-green-500 shadow-xl shadow-green-100' : 'bg-white border-slate-100 opacity-80'}`}>
             <div className="flex justify-between items-start mb-6">
               <div>
-                <span className={`text-[9px] font-black px-2 py-1 rounded uppercase ${!unitAWins ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-500'}`}>Unit B</span>
+                <span className={`text-[9px] font-black px-2 py-1 rounded uppercase ${!unitAWins ? 'bg-green-600 text-white' : 'bg-slate-200 text-slate-500'}`}>Unit B</span>
                 <select value={unitB} onChange={(e) => setUnitB(e.target.value)}
                   className="block mt-2 text-xl font-black bg-transparent outline-none cursor-pointer">
                   {filteredFleet
@@ -465,7 +465,7 @@ const FuelMonitoring = () => {
         <div className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
           <div className="flex justify-between items-center mb-8">
             <h3 className="text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-              <BarChart3 size={16} className="text-blue-600" /> Consumption Trend Analysis
+              <BarChart3 size={16} className="text-green-600" /> Consumption Trend Analysis
             </h3>
             <div className="flex gap-4 bg-slate-50 px-3 py-1.5 rounded-lg border border-slate-100">
               {graphData.map((group, i) => (

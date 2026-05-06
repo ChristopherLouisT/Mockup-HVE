@@ -6,19 +6,36 @@ const MutationSparepart = () => {
 
   // 🔹 Sparepart data
   const [spareparts, setSpareparts] = useState([
-    { id: 1, code: "228C0-80012", name: "Cylinder Assy Lift", category: "Mesin Lain-Lain", category_code: "MSLL", location: "Surabaya - Depo 4", 
+    { id: 1, code: "228C0-80012", name: "Cylinder Assy Lift", category: "Mesin Lain-Lain", category_code: "MSLL", port: "SBY", location: "Depo 4", 
         stock: 10, satuan: "PCS", eta: "2 Jam" },
-    { id: 2, code: "HVE.GSKT.800619", name: "Gasket Kit 80-0619 BOSPOM PF6", category: "Heavy Equipment", category_code: "HVE", location: "Jakarta - Depo C",
+    { id: 2, code: "HVE.GSKT.800619", name: "Gasket Kit 80-0619 BOSPOM PF6", category: "Heavy Equipment", category_code: "HVE", port: "JKT", location: "Depo Marunda",
         stock: 3, satuan: "SET", eta: "4 Hari" },
-    { id: 3, code: "KWLS2.5SUPERSETE", name: "MAC Super Steel 🚫 2.5MM", category: "Kawat Las", category_code: "KWLS", location: "Ambon - Depo A",
+    { id: 3, code: "KWLS2.5SUPERSETE", name: "MAC Super Steel 🚫 2.5MM", category: "Kawat Las", category_code: "KWLS", port: "BPP", location: "Balikpapan",
         stock: 0, satuan: "KG", eta: "-" },
+    { id: 4, code: "HOSE.HREL3X3", name: 'HOSE RADIATOR ELBOW 🚫 3" X 3"',  category_code: "HOSE", category: "SELANG / HOSE", port: "JKT", location: "Depo Merak",
+        stock: 5, satuan: "MTR", eta: "5 Hari" },
+    { id: 5, code: "NIS.260.AA21002", name: "159620-6821002 ACTUATOR ASSY GOVERNOR NISSAN EURO PK260", category_code: "NIS PK260", category: "MESIN NISSAN EURO PK260", port: "SBY", location: "Depo T.Langon",
+        stock: 23, satuan: "MTR", eta: "1 Jam" },
   ]);
+
+  // Port To Location Data
+  const portLocationMap: Record<string, string[]> = {
+    SBY: ["DEPO 4", "DEPO JAPFA", "DEPO T.LANGON", "TERMINAL TELUK LAMONG"],
+    JKT: ["JAKARTA", "DEPO MARUNDA", "DEPO PRIOK", "DEPO MERAK"],
+    BPP: ["BALIKPAPAN"],
+    BMS: ["BANJARMASIN"],
+    BLW: ["BELAWAN"]
+  };
+
+  const [selectedPort, setSelectedPort] = useState("");
+  const [selectedLocation, setSelectedLocation] = useState("");
 
   const [requests, setRequests] = useState<any[]>([]);
 
   // 🔹 Modal state
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [qty, setQty] = useState(0);
+  const [reason, setReason] = useState("");
 
   // 🔹 Toast
   const [toast, setToast] = useState<string | null>(null);
@@ -28,6 +45,21 @@ const MutationSparepart = () => {
     setTimeout(() => setToast(null), 2000);
   };
 
+  // No Mutasi format: MTS-YYYYMMDD-RND
+  const generateId = () => {
+    const now = new Date();
+
+    const datePart = now.toISOString().slice(0,10).replace(/-/g, ""); 
+    // 20260506
+
+    const randomPart = Math.floor(Math.random() * 1000)
+      .toString()
+      .padStart(3, "0"); 
+    // 042
+
+    return `MTS-${datePart}-${randomPart}`;
+  };
+
   // 🔹 Submit Request
   const submitRequest = () => {
     if (!selectedItem || qty <= 0 || qty > selectedItem.stock) {
@@ -35,15 +67,21 @@ const MutationSparepart = () => {
       return;
     }
 
+    if (!reason) {
+      showToast("Alasan / Keterangan pengajuan wajib diisi");
+      return;
+    }
+
     const newRequest = {
-      id: Date.now(),
+      id: generateId(),
       code: selectedItem.code,
       sparepart: selectedItem.name,
       category: selectedItem.category,
       category_code: selectedItem.category_code,
-      from: "Surabaya - Depo Tambak Langon",
-      to: selectedItem.location,
+      from: "SBY - Depo JAPFA",
+      to: `${selectedItem.port} - ${selectedItem.location}`,
       qty,
+      reason,
       unit: selectedItem.satuan,
       status: "pending"
     };
@@ -51,7 +89,7 @@ const MutationSparepart = () => {
     setRequests(prev => [...prev, newRequest]);
     setSelectedItem(null);
     setQty(0);
-
+    setReason("");
     showToast("Request berhasil dibuat");
   };
 
@@ -84,25 +122,60 @@ const MutationSparepart = () => {
     rejected: "bg-red-100 text-red-700"
   };
 
+  const filteredSpareparts = spareparts.filter(item => {
+    const matchPort = selectedPort
+      ? item.port?.toLowerCase() === selectedPort.toLowerCase()
+      : true;
+
+    const matchLocation = selectedLocation
+      ? item.location?.toLowerCase() === selectedLocation.toLowerCase()
+      : true;
+
+    return matchPort && matchLocation;
+  });
+
   return (
     <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
       <main className="max-w-7xl mx-auto p-5">
 
         {/* HEADER */}
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <FileText className="text-blue-600"/> Request Mutasi Sparepart
+          <FileText className="text-green-600"/> Request Mutasi Sparepart
         </h2>
 
         {/* ================= REQUEST ================= */}
         <div className="bg-white rounded-xl border p-6 mb-8">
 
           <h3 className="text-sm font-bold text-slate-400 mb-4 flex gap-2">
-            <Settings size={16}/> Request Sparepart
+            <Settings size={16}/> Pencarian Sparepart
           </h3>
 
-          <div className="flex gap-2 mb-4">
+          <div className="flex gap-2 mb-4 items-center">
             <Search size={16}/>
-            <input className="border p-2 text-sm w-full rounded" placeholder="Search..." />
+            <input className="border p-2 text-sm w-full rounded" placeholder="Cari Sparepart..." />
+
+            {/* PORT */}
+            <select value={selectedPort}
+              onChange={(e) => {
+                setSelectedPort(e.target.value);
+                setSelectedLocation("");
+              }} className="border p-2 text-xs rounded bg-white">
+              <option value="">All Port</option>
+              {Object.keys(portLocationMap).map(port => (
+                <option key={port} value={port}>{port}</option>
+              ))}
+            </select>
+
+            {/* LOCATION: Only works when a port is selected */}
+            <select value={selectedLocation} onChange={(e) => setSelectedLocation(e.target.value)}
+              disabled={!selectedPort} className="border p-2 text-xs rounded bg-white disabled:bg-slate-100">
+              <option value="">All Location</option>
+              {selectedPort &&
+                portLocationMap[selectedPort].map(loc => (
+                  <option key={loc} value={loc}>{loc}</option>
+                ))
+              }
+            </select>
           </div>
 
           <table className="w-full text-xs border">
@@ -121,25 +194,29 @@ const MutationSparepart = () => {
             </thead>
 
             <tbody className="text-center">
-              {spareparts.map(item => (
+              {filteredSpareparts.map(item => (
                 <tr key={item.id} className="border-t">
                   <td className="p-2">{item.code}</td>
-                  <td className="p-2">{item.name}</td>
+                  <td className="p-2">
+                    <div className="line-clamp-3 whitespace-normal break-words">
+                      {item.name}
+                    </div>
+                  </td>
                   <td className="p-2">{item.category}</td>
                   <td className="p-2">{item.category_code}</td>
-                  <td className="p-2">{item.location}</td>
+                  <td className="p-2">{item.port}-{item.location}</td>
                   <td className={`p-2 font-bold ${item.stock === 0 ? "text-red-500" : "text-green-600"}`}>
                     {item.stock}
                   </td>
                   <td className="p-2">{item.satuan}</td>
                   <td className="p-2">
-                    <span className="bg-blue-100 text-blue-600 px-2 py-1 rounded text-[10px]">
+                    <span className="bg-green-100 text-green-600 px-2 py-1 rounded text-[10px]">
                       ⏱ {item.eta}
                     </span>
                   </td>
                   <td className="p-2">
                     <button onClick={() => setSelectedItem(item)} disabled={item.stock === 0}
-                      className="bg-blue-500 text-white px-2 py-1 rounded text-[10px] disabled:opacity-50">
+                      className="bg-green-500 text-white px-2 py-1 rounded text-[10px] disabled:opacity-50">
                       Request
                     </button>
                   </td>
@@ -152,7 +229,7 @@ const MutationSparepart = () => {
         {/* REQUEST LIST FOR REQUESTER TO SEE THE ALL THE REQUEST THEY HAVE DONE  */}
         <div className="bg-white rounded-xl border mb-10">
           <div className="p-4 font-bold text-sm text-slate-500 border-b">
-            List Pengajuan Keluar Mutasi Sparepart
+            Riwayat Pengajuan Mutasi
           </div>
           <table className="w-full text-xs">
             <thead className="bg-slate-100">
@@ -161,8 +238,8 @@ const MutationSparepart = () => {
                 <th className="p-2">Part Code</th>
                 <th className="p-2">Part Name</th>
                 <th className="p-2">Part Category</th>
-                <th className="p-2">Category Code</th>
                 <th className="p-2">To</th>
+                <th className="p-2">Reason</th>
                 <th className="p-2">Qty</th>
                 <th className="p-2">Unit</th>
                 <th className="p-2">Status</th>
@@ -175,8 +252,12 @@ const MutationSparepart = () => {
                   <td className="p-2">{item.code}</td>
                   <td className="p-2">{item.sparepart}</td>
                   <td className="p-2">{item.category}</td>
-                  <td className="p-2">{item.category_code}</td>
                   <td className="p-2">{item.to}</td>
+                  <td className="p-2">
+                    <div className="line-clamp-3 whitespace-normal break-words">
+                      {item.reason}
+                    </div>
+                  </td>
                   <td className="p-2 font-bold">{item.qty}</td>
                   <td className="p-2">{item.unit}</td>
                   <td className="p-2">
@@ -191,13 +272,13 @@ const MutationSparepart = () => {
         </div>
 
         <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
-          <FileText className="text-blue-600"/> List Request Mutasi Sparepart
+          <FileText className="text-green-600"/> Approval Mutasi
         </h2>
 
         {/* ================= REQUEST LIST FOR APPROVERS ================= */}
         <div className="bg-white rounded-xl border">
           <div className="p-4 font-bold text-sm text-slate-500 border-b">
-            List Pengajuan Masuk Mutasi Sparepart
+            Approval Mutasi
           </div>
           <table className="w-full text-xs">
             <thead className="bg-slate-100">
@@ -206,6 +287,7 @@ const MutationSparepart = () => {
                 <th className="p-2">Part Name</th>
                 <th className="p-2">Part Category</th>
                 <th className="p-2">From</th>
+                <th className="p-2">Reason</th>
                 <th className="p-2">Qty</th>
                 <th className="p-2">Unit</th>
                 <th className="p-2">Process</th>
@@ -219,6 +301,11 @@ const MutationSparepart = () => {
                   <td className="p-2">{item.sparepart}</td>
                   <td className="p-2">{item.category}</td>
                   <td className="p-2">{item.from}</td>
+                  <td className="p-2">
+                    <div className="line-clamp-3 whitespace-normal break-words">
+                      {item.reason}
+                    </div>
+                  </td>
                   <td className="p-2 font-bold">{item.qty}</td>
                   <td className="p-2">{item.unit}</td>
                   <td className="p-2">
@@ -248,7 +335,7 @@ const MutationSparepart = () => {
 
       </main>
 
-      {/* ================= MODAL ================= */}
+      {/* ================= MODAL / POP UP ================= */}
       {selectedItem && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
 
@@ -261,6 +348,14 @@ const MutationSparepart = () => {
 
             <input type="number" className="border w-full p-2 rounded text-sm mb-4"
               placeholder="Qty" onChange={(e) => setQty(Number(e.target.value))}/>
+
+            <textarea className="border w-full p-2 rounded text-sm mb-4 overflow-hidden"
+              rows={1} placeholder="Alasan / Keterangan Pengajuan"
+              onInput={(e: any) => {
+                e.target.style.height = "auto";
+                e.target.style.height = e.target.scrollHeight + "px";
+              }} 
+              onChange={(e) => setReason(e.target.value)}/>
 
             <div className="flex justify-end gap-2">
               <button onClick={() => setSelectedItem(null)}
@@ -277,7 +372,7 @@ const MutationSparepart = () => {
         </div>
       )}
 
-      {/* ================= TOAST ================= */}
+      {/* ================= TOAST / NOTIFICATION ================= */}
       {toast && (
         <div className="fixed bottom-5 left-5 bg-black text-white px-4 py-2 rounded text-sm shadow-lg">
           {toast}

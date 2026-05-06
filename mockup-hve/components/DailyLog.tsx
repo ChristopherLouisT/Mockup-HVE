@@ -412,8 +412,8 @@ const DailyLogActivity = () => {
       <main className="max-w-7xl mx-auto p-5">
 
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold flex items-center gap-2"><FileText className="text-blue-600" size={24}/>Daily Log Activity</h2>
-          <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Create Mode</span>
+          <h2 className="text-2xl font-bold flex items-center gap-2"><FileText className="text-green-600" size={24}/>Daily Log Activity</h2>
+          <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Create Mode</span>
         </div>
 
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
@@ -424,7 +424,7 @@ const DailyLogActivity = () => {
               
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-sm font-semibold text-slate-600">Location</label>
-                <select className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                <select className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none">
                   <option>SPIL Kalianak</option>
                   <option>Depo 4</option>
                   <option>Depo Tambak Langon</option>
@@ -434,7 +434,7 @@ const DailyLogActivity = () => {
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-sm font-semibold text-slate-600">Equip Name</label>
                 <select value={equipName} onChange={(e) => handleEquipChange(e.target.value)} 
-                className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none">
                   <option value="">Choose Equipment...</option>
                   <option>Reach Stacker</option>
                   <option>Trailer</option>
@@ -444,14 +444,14 @@ const DailyLogActivity = () => {
 
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-tight">No. SPK</label>
-                <input disabled value={noSPK} className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-700" placeholder="Select Equipment & Location First..."/>
+                <input disabled value={noSPK} className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-green-700" placeholder="Select Equipment & Location First..."/>
               </div>
 
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-tight">No. Laporan</label>
                 <div 
-                className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-600 cursor-pointer 
-                hover:border-blue-400 transition-colors min-h-[38px] flex items-center flex-wrap gap-1">
+                className="col-span-2 bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-green-600 cursor-pointer 
+                hover:border-green-400 transition-colors min-h-[38px] flex items-center flex-wrap gap-1">
                   {autoReports.length > 0 ? (
                     autoReports.map((id) => (
                       <span key={id} className={`px-1.5 py-0.5 rounded text-[10px] font-bold border
@@ -474,7 +474,7 @@ const DailyLogActivity = () => {
 
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-sm font-semibold text-slate-600">Activity Type</label>
-                <select className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                <select className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none">
                   <option>01. Maintenance</option>
                   <option>02. Breakdown</option>
                   <option>05. PM 250</option>
@@ -486,26 +486,26 @@ const DailyLogActivity = () => {
               {/* <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2"><Clock size={16} /> Operational Data</h3> */}
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-sm font-semibold text-slate-600">HMU</label>
-                <input type="number" placeholder="0.0" className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                <input type="number" placeholder="0.0" className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none" />
               </div>
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-sm font-semibold text-slate-600">Start Time</label>
-                <input type="datetime-local" className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold" />
+                <input type="datetime-local" className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none font-bold" />
               </div>
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-sm font-semibold text-slate-600 italic">Waiting Labor</label>
                 <input type="number" placeholder="Hrs" value={waitLabor} onChange={(e) => setWaitLabor(e.target.value)} 
-                className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none" />
               </div>
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-sm font-semibold text-slate-600 italic">Waiting Part</label>
                 <input type="number" placeholder="Hrs" value={waitPart} onChange={(e) => setWaitPart(e.target.value)} 
-                className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none" />
               </div>
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-sm font-semibold text-slate-600 italic">Time Repair</label>
                 <input type="number" placeholder="Hrs" value={timeRepair} onChange={(e) => setTimeRepair(e.target.value)} 
-                className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none" />
+                className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none" />
               </div>
             </div>
 
@@ -518,7 +518,7 @@ const DailyLogActivity = () => {
 
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-tight">Mekanik</label>
-                <div className="flex flex-wrap gap-2 p-2 bg-white border border-slate-200 rounded-lg min-h-[42px] focus-within:ring-2 focus-within:ring-blue-500">
+                <div className="flex flex-wrap gap-2 p-2 bg-white border border-slate-200 rounded-lg min-h-[42px] focus-within:ring-2 focus-within:ring-green-500">
                   {mechanics.map((name, index) => (
                     <span key={index} className="flex items-center gap-1 bg-blue-50 text-blue-700 px-2 py-1 rounded-md text-xs font-bold border border-blue-100">{name}
                       <button onClick={() => removePerson('mechanic', index)} className="hover:text-red-500"><X size={14} />
@@ -540,7 +540,7 @@ const DailyLogActivity = () => {
 
               <div className="flex flex-col gap-2">
                 <label className="text-xs font-bold text-slate-500 uppercase tracking-tight">Helper</label>
-                <div className="flex flex-wrap gap-2 p-2 bg-white border border-slate-200 rounded-lg min-h-[42px] focus-within:ring-2 focus-within:ring-blue-500">
+                <div className="flex flex-wrap gap-2 p-2 bg-white border border-slate-200 rounded-lg min-h-[42px] focus-within:ring-2 focus-within:ring-green-500">
                   {helpers.map((name, index) => (
                     <span key={index} className="flex items-center gap-1 bg-green-50 text-green-700 px-2 py-1 rounded-md text-xs font-bold border border-green-100">{name}
                       <button onClick={() => removePerson('helper', index)} className="hover:text-red-500"><X size={14} /></button>
@@ -762,8 +762,8 @@ const DailyLogActivity = () => {
 
         <div className="flex gap-3 justify-end items-center">
           <button className="px-6 py-2.5 rounded-lg text-white text-sm font-bold bg-red-500 hover:bg-red-600 transition-colors flex items-center gap-2"><X size={18} /> CANCEL</button>
-          <button className="px-6 py-2.5 rounded-lg text-sm font-bold bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 transition-colors">SAVE & CLOSE</button>
-          <button className="px-8 py-2.5 rounded-lg text-sm font-bold bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200 flex items-center gap-2"><Save size={18} /> SAVE ALL</button>
+          <button className="px-6 py-2.5 rounded-lg text-sm font-bold bg-white border border-green-500 text-green-500 hover:bg-green-100 transition-colors">SAVE & CLOSE</button>
+          <button className="px-8 py-2.5 rounded-lg text-sm font-bold bg-green-500 text-white hover:bg-green-600 shadow-lg shadow-green-200 flex items-center gap-2"><Save size={18} /> SAVE ALL</button>
         </div>
       </main>
 

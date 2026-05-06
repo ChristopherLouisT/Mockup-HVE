@@ -92,8 +92,8 @@ const CreateSPK = () => {
       <main className="max-w-7xl mx-auto p-5">
 
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-2xl font-bold flex items-center gap-2"><FileText className="text-blue-600" size={24}/>Create SPK</h2>
-          <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Create Mode</span>
+          <h2 className="text-2xl font-bold flex items-center gap-2"><FileText className="text-green-600" size={24}/>Create SPK</h2>
+          <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider">Create Mode</span>
         </div>
 
         {/* <div className='flex flex-col gap-5 mb-10'> */}
@@ -256,7 +256,7 @@ const CreateSPK = () => {
               
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-sm font-semibold text-slate-600">Location</label>
-                <select className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                <select className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none">
                   <option>SPIL Kalianak</option>
                   <option>Depo 4</option>
                   <option>Depo Tambak Langon</option>
@@ -266,7 +266,7 @@ const CreateSPK = () => {
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-sm font-semibold text-slate-600">Equip Name</label>
                 <select value={equipName} onChange={(e) => setEquipName(e.target.value)} 
-                className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none">
                   <option value="">Pilih Alat...</option>
                   <option>Reach Stacker</option>
                   <option>Trailer</option>
@@ -279,14 +279,14 @@ const CreateSPK = () => {
               <h3 className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-9 flex items-center gap-4"></h3>
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-sm font-semibold text-slate-600">Work Plan</label>
-                <input type="date" className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none font-bold" />
+                <input type="date" className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-green-500 outline-none font-bold" />
               </div>
 
               <div className="grid grid-cols-3 gap-4 items-center">
                 <label className="text-xs font-bold text-slate-400 uppercase tracking-tight">No. Laporan</label>
                 <div onClick={() => setIsLaporanModalOpen(true)} 
                 className="col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-600 cursor-pointer 
-                hover:border-blue-400 transition-colors min-h-[38px] flex items-center flex-wrap gap-1">
+                hover:border-green-400 transition-colors min-h-[38px] flex items-center flex-wrap gap-1">
                   {(selectedLaporan.length > 0 || selectedPM.length > 0) ? (
                     <>
                       {selectedLaporan.map(id => (
@@ -316,7 +316,7 @@ const CreateSPK = () => {
             </label>
             <input readOnly value={noSPK}
               className="w-64 text-center bg-slate-100 border border-slate-200 rounded-lg p-2 text-sm font-mono text-blue-700"/>
-            <button className="mt-3 flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider shadow-sm"
+            <button className="mt-3 flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-wider shadow-sm"
               onClick={() => {
                 alert("SPK Saved");
               }}>
