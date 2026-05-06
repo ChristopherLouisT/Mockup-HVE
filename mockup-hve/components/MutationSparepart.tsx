@@ -78,8 +78,10 @@ const MutationSparepart = () => {
       sparepart: selectedItem.name,
       category: selectedItem.category,
       category_code: selectedItem.category_code,
-      from: "SBY - Depo JAPFA",
-      to: `${selectedItem.port} - ${selectedItem.location}`,
+      from_port: "SBY",
+      from_location: "Depo JAPFA",
+      to_port: selectedItem.port,
+      to_location: selectedItem.location,
       qty,
       reason,
       unit: selectedItem.satuan,
@@ -101,7 +103,7 @@ const MutationSparepart = () => {
           if (status === "approved") {
             setSpareparts(sp =>
               sp.map(s =>
-                s.name === r.sparepart && s.location === r.from
+                s.name === r.sparepart && s.location === r.from_location && s.port === r.from_port
                   ? { ...s, stock: s.stock - r.qty }
                   : s
               )
@@ -185,6 +187,7 @@ const MutationSparepart = () => {
                 <th className="p-2">Part Name</th>
                 <th className="p-2">Part Category</th>
                 <th className="p-2">Category Code</th>
+                <th className="p-2">Port</th>
                 <th className="p-2">Location</th>
                 <th className="p-2">Stock</th>
                 <th className="p-2">Unit</th>
@@ -204,13 +207,14 @@ const MutationSparepart = () => {
                   </td>
                   <td className="p-2">{item.category}</td>
                   <td className="p-2">{item.category_code}</td>
-                  <td className="p-2">{item.port}-{item.location}</td>
+                  <td className="p-2">{item.port}</td>
+                  <td className="p-2">{item.location}</td>
                   <td className={`p-2 font-bold ${item.stock === 0 ? "text-red-500" : "text-green-600"}`}>
                     {item.stock}
                   </td>
                   <td className="p-2">{item.satuan}</td>
                   <td className="p-2">
-                    <span className="bg-green-100 text-green-600 px-2 py-1 rounded text-[10px]">
+                    <span className="bg-green-100 text-green-600 px-0.5 py-1 rounded text-[10px]">
                       ⏱ {item.eta}
                     </span>
                   </td>
@@ -234,15 +238,25 @@ const MutationSparepart = () => {
           <table className="w-full text-xs">
             <thead className="bg-slate-100">
               <tr>
-                <th className="p-2">No Mutasi</th>
-                <th className="p-2">Part Code</th>
-                <th className="p-2">Part Name</th>
-                <th className="p-2">Part Category</th>
-                <th className="p-2">To</th>
-                <th className="p-2">Reason</th>
-                <th className="p-2">Qty</th>
-                <th className="p-2">Unit</th>
-                <th className="p-2">Status</th>
+                <th rowSpan={2} className="p-2">No Mutasi</th>
+                <th rowSpan={2} className="p-2">Part Code</th>
+                <th rowSpan={2} className="p-2">Part Name</th>
+                <th rowSpan={2} className="p-2">Part Category</th>
+
+                <th colSpan={2} className="p-2">Asal Mutasi</th>
+                <th colSpan={2} className="p-2">Tujuan Mutasi</th>
+
+                <th rowSpan={2} className="p-2">Reason</th>
+                <th rowSpan={2} className="p-2">Qty</th>
+                <th rowSpan={2} className="p-2">Unit</th>
+                <th rowSpan={2} className="p-2">Status</th>
+              </tr>
+
+              <tr>
+                <th className="p-2">Port</th>
+                <th className="p-2">Location</th>
+                <th className="p-2">Port</th>
+                <th className="p-2">Location</th>
               </tr>
             </thead>
             <tbody className="text-center">
@@ -252,13 +266,16 @@ const MutationSparepart = () => {
                   <td className="p-2">{item.code}</td>
                   <td className="p-2">{item.sparepart}</td>
                   <td className="p-2">{item.category}</td>
-                  <td className="p-2">{item.to}</td>
+                  <td className="p-2">{item.from_port}</td>
+                  <td className="p-2">{item.from_location}</td>
+                  <td className="p-2">{item.to_port}</td>
+                  <td className="p-2">{item.to_location}</td>
                   <td className="p-2">
-                    <div className="line-clamp-3 whitespace-normal break-words">
+                    <div className="line-clamp-3 break-words">
                       {item.reason}
                     </div>
                   </td>
-                  <td className="p-2 font-bold">{item.qty}</td>
+                  <td className="p-2">{item.qty}</td>
                   <td className="p-2">{item.unit}</td>
                   <td className="p-2">
                     <span className={`px-2 py-1 rounded text-[10px] font-bold ${statusStyle[item.status]}`}>
@@ -283,15 +300,25 @@ const MutationSparepart = () => {
           <table className="w-full text-xs">
             <thead className="bg-slate-100">
               <tr>
-                <th className="p-2">No Mutasi</th>
-                <th className="p-2">Part Name</th>
-                <th className="p-2">Part Category</th>
-                <th className="p-2">From</th>
-                <th className="p-2">Reason</th>
-                <th className="p-2">Qty</th>
-                <th className="p-2">Unit</th>
-                <th className="p-2">Process</th>
-                <th className="p-2 text-center">Action</th>
+                <th rowSpan={2} className="p-2">No Mutasi</th>
+                <th rowSpan={2} className="p-2">Part Name</th>
+                <th rowSpan={2} className="p-2">Part Category</th>
+
+                <th colSpan={2} className="p-2">Asal Mutasi</th>
+                <th colSpan={2} className="p-2">Tujuan Mutasi</th>
+
+                <th rowSpan={2} className="p-2">Reason</th>
+                <th rowSpan={2} className="p-2">Qty</th>
+                <th rowSpan={2} className="p-2">Unit</th>
+                <th rowSpan={2} className="p-2">Process</th>
+                <th rowSpan={2} className="p-2">Action</th>
+              </tr>
+
+              <tr>
+                <th className="p-2">Port</th>
+                <th className="p-2">Location</th>
+                <th className="p-2">Port</th>
+                <th className="p-2">Location</th>
               </tr>
             </thead>
             <tbody className="text-center">
@@ -300,7 +327,10 @@ const MutationSparepart = () => {
                   <td className="p-2">{item.id}</td>
                   <td className="p-2">{item.sparepart}</td>
                   <td className="p-2">{item.category}</td>
-                  <td className="p-2">{item.from}</td>
+                  <td className="p-2">{item.from_port}</td>
+                  <td className="p-2">{item.from_location}</td>
+                  <td className="p-2">{item.to_port}</td>
+                  <td className="p-2">{item.to_location}</td>
                   <td className="p-2">
                     <div className="line-clamp-3 whitespace-normal break-words">
                       {item.reason}
